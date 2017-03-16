@@ -1,0 +1,7 @@
+/target/
+/.project
+/.externalToolBuilders
+/.settings
+/.classpath
+/**/node_modules
+/**/bower_components
