@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 import org.junit.Test;
 
-public class UserManageApiTests extends AbstractMvcTests {
+public class UserManageApiTest extends AbstractMvcTests {
 	
 	@Test
 	public void testList() throws Exception {

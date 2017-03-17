@@ -7,9 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -29,8 +26,6 @@ public class DbConfig {
 		dataSource.setPassword(env.getProperty("jdbc.password"));
 		dataSource.setMinimumIdle(env.getProperty("jdbc.pool.minSize", Integer.class));
 		dataSource.setMaximumPoolSize(env.getProperty("jdbc.pool.maxSize", Integer.class));
-		
-		DatabasePopulatorUtils.execute(new ResourceDatabasePopulator(new ClassPathResource("/mysql.sql")), dataSource);
 		return dataSource;
 	}
     
