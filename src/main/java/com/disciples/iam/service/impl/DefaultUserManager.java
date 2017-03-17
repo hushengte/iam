@@ -52,7 +52,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	private static final String FIND_ALL_ROLES_BY_USERNAME = "select g.roles from iam_user u, iam_user_group m, iam_group g"
 			+ " where u.id = m.user_id and m.group_id = g.id and u.username = ?";
 	private static final String FIND_BY = "select %s from iam_user u left join iam_user_group m on u.id = m.user_id";
-	private static final String EXIST = "select id from iam_user where id = ?";
+	private static final String EXIST = "select id from iam_user where username = ?";
 	private static final String INSERT = "insert into iam_user (username, password, name, email, phone, create_time) values (?,?,?,?,?,?)";
 	private static final String UPDATE = "update iam_user set name = ?, email = ?, phone = ? where id = ?";
 	private static final String CHANGE_PASSWORD = "update iam_user set password = ? where id = ?";
@@ -89,8 +89,13 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	}
 	
 	@Override
+	public User findOneByUsername(String username) {
+		return jdbcTemplate.queryForObject(SELECT_BY_USERNAME, this, username);
+	}
+	
+	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = jdbcTemplate.queryForObject(SELECT_BY_USERNAME, this, username);
+		User user = findOneByUsername(username);
 		if (user == null) {
             throw new UsernameNotFoundException(String.format("用户 '%s' 不存在", username));
         }
@@ -118,17 +123,17 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
     }
 	
 	@Override
-	public Page<User> find(int page, int size, String groupId, String keyword) {
+	public Page<User> find(int page, int size, Integer groupId, String keyword) {
 		Pageable pageable = new PageRequest(page, size);
 		StringBuilder filterSb = new StringBuilder(" where 1=1");
 		List<Object> args = new ArrayList<Object>();
-		if (StringUtils.hasText(groupId)) {
+		if (groupId != null) {
 			filterSb.append(" and m.group_id = ?");
 			args.add(groupId);
 		}
 		if (StringUtils.hasText(keyword)) {
 			filterSb.append(" and (u.username like ? or u.name like ?)");
-			String param = "%" + keyword + "%";
+			String param = "%" + keyword.trim() + "%";
 			args.add(param);
 			args.add(param);
 		}
@@ -141,7 +146,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		args.add(pageable.getPageNumber() * pageable.getPageSize());
 		args.add(pageable.getPageSize());
 		String findSql = String.format(FIND_BY, "u.id, u.username, u.name, u.email, u.phone, u.create_time, u.enabled") + filterSb.toString();
-		List<User> content = jdbcTemplate.query(findSql, args.toArray(), new RowMapper<User>() {
+		List<User> content = jdbcTemplate.query(findSql, new RowMapper<User>() {
 			@Override
 			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
 				User dto = new User(rs.getInt(1));
@@ -153,17 +158,18 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 				dto.setEnabled(rs.getInt(7) > 0);
 				return dto;
 			}
-		});
+		}, args.toArray());
 		return new PageImpl<User>(content, pageable, count);
 	}
 	
 	@Override
 	public boolean exists(String username) {
 		List<Integer> userIds = jdbcTemplate.queryForList(EXIST, Integer.class, username);
-		if (userIds.size() > 1) {
+		int size = userIds.size();
+		if (size > 1) {
 			throw new ManageException(String.format("找到多个用户名为'%s'的用户", username));
 		}
-		return true;
+		return size == 1;
 	}
 	
 	@Override
@@ -213,9 +219,9 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		List<User> savedUsers = new ArrayList<User>();
 		for (User user : users) {
 			if (!existUsernameSet.contains(user.getUsername())) {
-				insertPlaceholders.add("(?,?,?,?,?,NOW())");
+				insertPlaceholders.add("(?,?,?,?,?)");
 				args.add(user.getUsername());
-				args.add(user.getPassword());
+				args.add(MD5_ENCODER.encodePassword(StringUtils.hasText(user.getPassword()) ?  user.getPassword(): DEFAULT_RAW_PASSWORD, null));
 				args.add(user.getName());
 				args.add(user.getEmail());
 				args.add(user.getPhone());
@@ -225,7 +231,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		if (insertPlaceholders.size() == 0) {
 			return Collections.emptyList();
 		}
-		StringBuilder insertSql = new StringBuilder("insert into iam_user (username, password, name, email, phone, create_time) values ");
+		StringBuilder insertSql = new StringBuilder("insert into iam_user (username, password, name, email, phone) values ");
 		insertSql.append(StringUtils.collectionToCommaDelimitedString(insertPlaceholders));
 		int[] sqlTypes = new int[args.size()];
 		Arrays.fill(sqlTypes, Types.VARCHAR);

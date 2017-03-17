@@ -23,7 +23,7 @@ public class UserManageController {
 	private UserManager userManager;
 	
 	@RequestMapping(value = "list", method = RequestMethod.POST)
-    public Object list(@RequestParam int page, @RequestParam int size, String field, String keyword) {
+    public Object list(@RequestParam int page, @RequestParam int size, Integer field, String keyword) {
 		Page<User> pageData = userManager.find(page, size, field, keyword);
         return Response.success(pageData.getContent(), pageData.getTotalElements());
     }

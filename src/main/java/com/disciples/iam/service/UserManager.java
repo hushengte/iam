@@ -8,7 +8,9 @@ import com.disciples.iam.domain.User;
 
 public interface UserManager {
 
-	Page<User> find(int page, int size, String groupId, String keyword);
+	Page<User> find(int page, int size, Integer groupId, String keyword);
+	
+	User findOneByUsername(String username);
 	
 	boolean exists(String username);
 	

@@ -17,9 +17,10 @@ public class Group extends AbstractModel {
         this.setId(id);
     }
     
-    public Group(Integer id, String name) {
+    public Group(Integer id, String name, String roles) {
 		this.setId(id);
 		this.name = name;
+		this.roles = roles;
 	}
 
     public String getName() {

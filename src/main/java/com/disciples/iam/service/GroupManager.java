@@ -11,6 +11,8 @@ import com.disciples.iam.domain.User;
 public interface GroupManager {
 
 	Page<Group> find(int page, int size, String keyword);
+	
+	List<Group> findAll();
 
 	List<KeyValue> keyValues();
 	

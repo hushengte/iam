@@ -79,6 +79,11 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	}
 	
 	@Override
+	public List<Group> findAll() {
+		return jdbcTemplate.query(FIND, this);
+	}
+	
+	@Override
 	public List<KeyValue> keyValues() {
 		return jdbcTemplate.query(FIND_ID_NAMES, new RowMapper<KeyValue>() {
 			@Override
