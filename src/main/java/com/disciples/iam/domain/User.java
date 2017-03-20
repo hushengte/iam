@@ -3,6 +3,10 @@ package com.disciples.iam.domain;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @SuppressWarnings("serial")
+@Entity
+@Table(name = "iam_user")
 public class User extends AbstractModel implements UserDetails {
     
 	private String username;
@@ -103,6 +109,7 @@ public class User extends AbstractModel implements UserDetails {
 	// ===================== UserDetails Implementation ======================
 	@Override
 	@JsonSerialize(contentUsing = GrantedAuthoritySerializer.class)
+	@Transient
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
@@ -113,19 +120,22 @@ public class User extends AbstractModel implements UserDetails {
 	}
 	 
     @Override
-    @JsonIgnore
+    @JsonIgnore 
+    @Transient
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
-    @JsonIgnore
+    @JsonIgnore 
+    @Transient
     public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
-    @JsonIgnore
+    @JsonIgnore 
+    @Transient
     public boolean isCredentialsNonExpired() {
         return true;
     }
