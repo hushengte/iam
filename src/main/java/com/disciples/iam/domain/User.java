@@ -51,6 +51,7 @@ public class User extends AbstractModel implements UserDetails {
 		this.username = username;
 	}
 
+	@JsonIgnore
 	public String getPassword() {
         return password;
     }
