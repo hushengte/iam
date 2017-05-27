@@ -25,7 +25,6 @@ import org.springframework.util.StringUtils;
 import com.disciples.feed.KeyValue;
 import com.disciples.feed.manage.ManageException;
 import com.disciples.iam.domain.Group;
-import com.disciples.iam.domain.User;
 import com.disciples.iam.service.GroupManager;
 
 public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
@@ -38,9 +37,9 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	private static final String DELETE = "delete from iam_group where id = ?";
 	
 	private static final String COUNT_USERS = "select count(user_id) from iam_user_group where group_id = ?";
-	private static final String FIND_USERS = "select u.id, u.username, u.roles, u.name, u.email, u.phone, u.create_time, u.enabled from iam_user u"
-			+ " left join iam_user_group m on u.id = m.user_id where m.group_id = ?";
 	private static final String DELETE_USER_GROUPS = "delete from iam_user_group where group_id = ? and user_id in (%s)";
+	private static final String FIND_BY_USER = "select g.id, g.name, g.roles, g.create_time from iam_group g"
+			+ " left join iam_user_group ug on g.id = ug.group_id where ug.user_id = ?";
 	
 	private JdbcTemplate jdbcTemplate;
 	
@@ -76,6 +75,11 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 		args.add(pageable.getPageNumber() * pageable.getPageSize());
 		args.add(pageable.getPageSize());
 		return new PageImpl<Group>(jdbcTemplate.query(FIND + condition.toString(), this, args.toArray()), pageable, count);
+	}
+	
+	@Override
+	public List<Group> find(Integer userId) {
+		return jdbcTemplate.query(FIND_BY_USER, this, userId);
 	}
 	
 	@Override
@@ -121,25 +125,6 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 		jdbcTemplate.update(DELETE, groupId);
 	}
 
-	@Override
-	public List<User> findUsers(Integer groupId) {
-		Assert.notNull(groupId, "用户组标识不能为空");
-		return jdbcTemplate.query(FIND_USERS, new RowMapper<User>() {
-			@Override
-			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-				User user = new User(rs.getInt(1));
-				user.setUsername(rs.getString(2));
-				user.setRoles(rs.getString(3));
-				user.setName(rs.getString(4));
-				user.setEmail(rs.getString(5));
-				user.setPhone(rs.getString(6));
-				user.setCreateTime(rs.getTimestamp(7));
-				user.setEnabled(rs.getInt(8) > 0);
-				return user;
-			}
-		}, groupId);
-	}
-	
 	@Override
 	public void removeUser(Integer groupId, List<Integer> userIds) {
 		Assert.notNull(groupId, "用户组标识不能为空");

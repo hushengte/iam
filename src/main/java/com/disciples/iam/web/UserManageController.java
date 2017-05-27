@@ -1,9 +1,12 @@
 package com.disciples.iam.web;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +39,17 @@ public class UserManageController {
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public Object update(@RequestBody User dto) {
         return Response.success(userManager.save(dto));
+    }
+    
+    @RequestMapping(value = "delete", method = RequestMethod.POST)
+    public Object delete(@RequestBody List<Map<String, Object>> dtoList) {
+    	Assert.notEmpty(dtoList, "The given DTO list must not be empty.");
+        List<Integer> userIds = new ArrayList<Integer>();
+        for (Map<String, Object> dto : dtoList) {
+        	userIds.add((Integer)dto.get("id"));
+        }
+        userManager.delete(userIds);
+        return Response.success(dtoList.size());
     }
     
     @RequestMapping(value = "{id}/groupIds", method = RequestMethod.GET)

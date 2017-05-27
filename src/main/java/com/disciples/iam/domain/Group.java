@@ -2,9 +2,14 @@ package com.disciples.iam.domain;
 
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import com.disciples.feed.AbstractModel;
 
 @SuppressWarnings("serial")
+@Entity
+@Table(name = "iam_group")
 public class Group extends AbstractModel {
     
     private String name;

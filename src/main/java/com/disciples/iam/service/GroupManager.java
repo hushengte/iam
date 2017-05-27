@@ -6,11 +6,11 @@ import org.springframework.data.domain.Page;
 
 import com.disciples.feed.KeyValue;
 import com.disciples.iam.domain.Group;
-import com.disciples.iam.domain.User;
 
 public interface GroupManager {
 
 	Page<Group> find(int page, int size, String keyword);
+	List<Group> find(Integer userId);
 	
 	List<Group> findAll();
 
@@ -29,8 +29,6 @@ public interface GroupManager {
 	 */
 	void delete(Integer groupId);
 
-	List<User> findUsers(Integer groupId);
-	
 	void removeUser(Integer groupId, List<Integer> userIds);
 
 }

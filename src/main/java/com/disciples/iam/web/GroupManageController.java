@@ -15,6 +15,7 @@ import com.disciples.feed.KeyValue;
 import com.disciples.feed.Response;
 import com.disciples.iam.domain.Group;
 import com.disciples.iam.service.GroupManager;
+import com.disciples.iam.service.UserManager;
 
 @RestController
 @RequestMapping("/admin/group")
@@ -22,6 +23,8 @@ public class GroupManageController {
 	
 	@Autowired
 	private GroupManager groupManager;
+	@Autowired
+	private UserManager userManager;
 	
 	@RequestMapping(value = "keyValues", method = RequestMethod.GET)
     public Object keyValues() {
@@ -53,7 +56,7 @@ public class GroupManageController {
     
     @RequestMapping(value = "{id}/users", method = RequestMethod.POST)
     public Object users(@PathVariable Integer groupId) {
-        return Response.success(groupManager.findUsers(groupId));
+        return Response.success(userManager.find(groupId));
     }
     
 }

@@ -48,13 +48,16 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultUserManager.class);
 	
-	private static final String SELECT_BY_USERNAME = "select id, username, password, roles, name, email, phone, create_time, enabled from iam_user where username = ?";
+	private static final String COMMON_COLUMNS = "u.id, u.username, u.roles, u.name, u.email, u.phone, u.create_time, u.enabled";
+	private static final String SELECT_BY_ID = "select " + COMMON_COLUMNS + ", u.password from iam_user u where u.id = ?";
+	private static final String SELECT_BY_USERNAME = "select " + COMMON_COLUMNS + ", u.password from iam_user u where u.username = ?";
 	private static final String FIND_ALL_ROLES_BY_USERNAME = "select g.roles from iam_user u, iam_user_group m, iam_group g"
 			+ " where u.id = m.user_id and m.group_id = g.id and u.username = ?";
-	private static final String FIND_BY = "select %s from iam_user u left join iam_user_group m on u.id = m.user_id";
+	private static final String FIND_BY_GROUP = "select %s from iam_user u left join iam_user_group m on u.id = m.user_id where m.group_id = ?";
+	private static final String FIND_BY = "select %s from iam_user u where 1=1";
 	private static final String EXIST = "select id from iam_user where username = ?";
-	private static final String INSERT = "insert into iam_user (username, password, name, email, phone, create_time) values (?,?,?,?,?,?)";
-	private static final String UPDATE = "update iam_user set name = ?, email = ?, phone = ? where id = ?";
+	private static final String INSERT = "insert into iam_user (username, password, name, email, phone, roles, create_time) values (?,?,?,?,?,?,?)";
+	private static final String UPDATE = "update iam_user set name = ?, email = ?, phone = ?, roles = ? where id = ?";
 	private static final String CHANGE_PASSWORD = "update iam_user set password = ? where id = ?";
 	private static final String DELETE_BY_ID = "delete from iam_user where id = ?";
 	private static final String DELETE_BY_ID_IN = "delete from iam_user where id in (%s)";
@@ -78,19 +81,34 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	public User mapRow(ResultSet rs, int rowNum) throws SQLException {
 		User user = new User(rs.getInt(1));
 		user.setUsername(rs.getString(2));
-		user.setPassword(rs.getString(3));
-		user.setRoles(rs.getString(4));
-		user.setName(rs.getString(5));
-		user.setEmail(rs.getString(6));
-		user.setPhone(rs.getString(7));
-		user.setCreateTime(rs.getTimestamp(8));
-		user.setEnabled(rs.getInt(9) > 0);
+		user.setRoles(rs.getString(3));
+		user.setName(rs.getString(4));
+		user.setEmail(rs.getString(5));
+		user.setPhone(rs.getString(6));
+		user.setCreateTime(rs.getTimestamp(7));
+		user.setEnabled(rs.getInt(8) > 0);
+		if (rs.getMetaData().getColumnCount() == 9) {
+			user.setPassword(rs.getString(9));
+		}
 		return user;
 	}
 	
 	@Override
 	public User findOneByUsername(String username) {
-		return jdbcTemplate.queryForObject(SELECT_BY_USERNAME, this, username);
+		List<User> users = jdbcTemplate.query(SELECT_BY_USERNAME, this, username);
+		if (users.size() > 0) {
+			return users.get(0);
+		}
+		return null;
+	}
+	
+	@Override
+	public User findOne(Integer id) {
+		List<User> users = jdbcTemplate.query(SELECT_BY_ID, this, id);
+		if (users.size() > 0) {
+			return users.get(0);
+		}
+		return null;
 	}
 	
 	@Override
@@ -125,41 +143,35 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	@Override
 	public Page<User> find(int page, int size, Integer groupId, String keyword) {
 		Pageable pageable = new PageRequest(page, size);
-		StringBuilder filterSb = new StringBuilder(" where 1=1");
 		List<Object> args = new ArrayList<Object>();
+		StringBuilder sqlFormat = new StringBuilder();
 		if (groupId != null) {
-			filterSb.append(" and m.group_id = ?");
+			sqlFormat.append(FIND_BY_GROUP);
 			args.add(groupId);
+		} else {
+			sqlFormat.append(FIND_BY);
 		}
 		if (StringUtils.hasText(keyword)) {
-			filterSb.append(" and (u.username like ? or u.name like ?)");
+			sqlFormat.append(" and (u.username like ? or u.name like ?)");
 			String param = "%" + keyword.trim() + "%";
 			args.add(param);
 			args.add(param);
 		}
-		String countSql = String.format(FIND_BY, "count(u.id)") + filterSb.toString();
-		Long count = jdbcTemplate.queryForObject(countSql, Long.class, args.toArray());
+		Long count = jdbcTemplate.queryForObject(String.format(sqlFormat.toString(), "count(u.id)"), Long.class, args.toArray());
 		if (count == null || count == 0) {
 			return new PageImpl<User>(Collections.<User>emptyList());
 		}
-		filterSb.append(" limit ?,?");
+		sqlFormat.append(" limit ?,?");
 		args.add(pageable.getPageNumber() * pageable.getPageSize());
 		args.add(pageable.getPageSize());
-		String findSql = String.format(FIND_BY, "u.id, u.username, u.name, u.email, u.phone, u.create_time, u.enabled") + filterSb.toString();
-		List<User> content = jdbcTemplate.query(findSql, new RowMapper<User>() {
-			@Override
-			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-				User dto = new User(rs.getInt(1));
-				dto.setUsername(rs.getString(2));
-				dto.setName(rs.getString(3));
-				dto.setEmail(rs.getString(4));
-				dto.setPhone(rs.getString(5));
-				dto.setCreateTime(rs.getTimestamp(6));
-				dto.setEnabled(rs.getInt(7) > 0);
-				return dto;
-			}
-		}, args.toArray());
+		List<User> content = jdbcTemplate.query(String.format(sqlFormat.toString(), COMMON_COLUMNS), this, args.toArray());
 		return new PageImpl<User>(content, pageable, count);
+	}
+	
+	@Override
+	public List<User> find(Integer groupId) {
+		Assert.notNull(groupId, "用户组标识不能为空");
+		return jdbcTemplate.query(String.format(FIND_BY_GROUP, COMMON_COLUMNS), this, groupId);
 	}
 	
 	@Override
@@ -184,10 +196,10 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	        user.setCreateTime(new Date());
 	        
 	        Object[] params = new Object[] {user.getUsername(), MD5_ENCODER.encodePassword(password, null), user.getName(), 
-	        		user.getEmail(), user.getPhone(), user.getCreateTime()};
+	        		user.getEmail(), user.getPhone(), user.getRoles(), user.getCreateTime()};
 	        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 	        
-	        int[] sqlTypes = new int[] {Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP};
+	        int[] sqlTypes = new int[] {Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP};
 	        PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(INSERT, sqlTypes);
 	        factory.setGeneratedKeysColumnNames("id");
 	        jdbcTemplate.update(factory.newPreparedStatementCreator(params), keyHolder);
@@ -197,7 +209,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	        return user;
 		}
 		//执行更新
-		jdbcTemplate.update(UPDATE, user.getName(), user.getEmail(), user.getPhone(), user.getId());
+		jdbcTemplate.update(UPDATE, user.getName(), user.getEmail(), user.getPhone(), user.getRoles(), user.getId());
         return user;
 	}
 	
