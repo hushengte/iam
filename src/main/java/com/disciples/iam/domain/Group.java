@@ -5,12 +5,12 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.disciples.feed.AbstractModel;
+import com.disciples.feed.BaseEntity;
 
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "iam_group")
-public class Group extends AbstractModel {
+public class Group extends BaseEntity {
     
     private String name;
     private String roles;

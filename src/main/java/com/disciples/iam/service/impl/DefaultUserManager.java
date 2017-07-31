@@ -40,7 +40,6 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 
 import com.disciples.feed.manage.ManageException;
-import com.disciples.feed.utils.MapUtils;
 import com.disciples.iam.domain.User;
 import com.disciples.iam.service.UserManager;
 
@@ -177,11 +176,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	@Override
 	public boolean exists(String username) {
 		List<Integer> userIds = jdbcTemplate.queryForList(EXIST, Integer.class, username);
-		int size = userIds.size();
-		if (size > 1) {
-			throw new ManageException(String.format("找到多个用户名为'%s'的用户", username));
-		}
-		return size == 1;
+		return userIds.size() > 0;
 	}
 	
 	@Override
@@ -256,7 +251,9 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		List<Map<String, Object>> keyList = keyHolder.getKeyList();
 		if (keyList.size() == savedUsers.size()) {
 			for (int i = 0; i < keyList.size(); i++) {
-				savedUsers.get(i).setId(MapUtils.getInt(keyList.get(i), "GENERATED_KEY"));
+				Object genKey = keyList.get(i).get("GENERATED_KEY");
+				Integer id = genKey instanceof Integer ? (Integer)genKey : Integer.parseInt(genKey.toString());
+				savedUsers.get(i).setId(id);
 			}
 			if (groupId != null && jdbcTemplate.queryForObject(COUNT_GROUP_BY_ID, Long.class, groupId) > 0) {
 				args = new ArrayList<Object>();
@@ -351,12 +348,12 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
         }
         int updateCount = deleteList.size();
         if (updateCount > 0) {
-        	StringBuilder deleteSql = new StringBuilder("delete from iam_user_group where group_id in (");
-        	for (int i = 0; i < updateCount; i++) {
-        		deleteSql.append("?,");
-        	}
-        	deleteSql.deleteCharAt(deleteSql.length() - 1).append(')').toString();
-        	jdbcTemplate.update(deleteSql.toString(), deleteList.toArray());
+        	String placeholders = StringUtils.collectionToDelimitedString(Collections.nCopies(updateCount, "?"), ",");
+        	String deleteSql = String.format("delete from iam_user_group where user_id = ? and group_id in (%s)", placeholders);
+        	List<Object> args = new ArrayList<Object>();
+        	args.add(userId);
+        	args.addAll(deleteList);
+        	jdbcTemplate.update(deleteSql.toString(), args.toArray());
         }
         if (!addList.isEmpty()) {
         	updateCount += batchInsertMembership(userId, addList);

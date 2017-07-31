@@ -10,7 +10,7 @@ import javax.persistence.Transient;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.disciples.feed.AbstractModel;
+import com.disciples.feed.BaseEntity;
 import com.disciples.iam.GrantedAuthoritySerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "iam_user")
-public class User extends AbstractModel implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
     
 	private String username;
     private String password;
