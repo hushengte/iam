@@ -5,8 +5,6 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.disciples.feed.BaseEntity;
-
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "iam_group")

@@ -1,10 +1,10 @@
 package com.disciples.iam.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 
-import com.disciples.feed.KeyValue;
 import com.disciples.iam.domain.Group;
 
 public interface GroupManager {
@@ -14,7 +14,7 @@ public interface GroupManager {
 	
 	List<Group> findAll();
 
-	List<KeyValue> keyValues();
+	List<Map<String, Object>> keyValues();
 	
 	/**
 	 * 标识为空，执行保存，否则执行更新

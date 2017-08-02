@@ -2,6 +2,7 @@ package com.disciples.iam;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -17,7 +18,6 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.disciples.feed.KeyValue;
 import com.disciples.iam.config.DbConfig;
 import com.disciples.iam.config.ServiceConfig;
 import com.disciples.iam.domain.Group;
@@ -67,13 +67,13 @@ public class ServiceTest {
 	
 	@Test
 	public void testGroupKeyValues() {
-		List<KeyValue> kvs = groupManager.keyValues();
+		List<Map<String, Object>> kvs = groupManager.keyValues();
 		List<Group> groups = groupManager.findAll();
 		for (int i = 0; i < groups.size(); i++) {
-			KeyValue kv = kvs.get(i);
+			Map<String, Object> kv = kvs.get(i);
 			Group saved = groups.get(i);
-			Assert.assertEquals((Integer)kv.getKey(), saved.getId());
-			Assert.assertEquals(kv.getValue(), saved.getName());
+			Assert.assertEquals((Integer)kv.get("id"), saved.getId());
+			Assert.assertEquals((String)kv.get("name"), saved.getName());
 		}
 	}
 	
@@ -98,8 +98,8 @@ public class ServiceTest {
 		
 		users.add(new User("eeeddd", null, "eeedddname", "eee@gmail.com", "18767122509"));
 		users.add(new User("fffddd", null, "eeefffname", "fff@gmail.com", "18767122509"));
-		List<KeyValue> kvs = groupManager.keyValues();
-		Integer groupId = kvs.size() > 0 ? (Integer)kvs.get(0).getKey() : null;
+		List<Map<String, Object>> kvs = groupManager.keyValues();
+		Integer groupId = kvs.size() > 0 ? (Integer)kvs.get(0).get("id") : null;
 		saved = userManager.batchInsert(users, groupId);
 		Assert.assertEquals(2, saved.size());
 		

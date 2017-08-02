@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +40,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 
-import com.disciples.feed.manage.ManageException;
 import com.disciples.iam.domain.User;
 import com.disciples.iam.service.UserManager;
 
@@ -185,7 +185,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		Assert.notNull(user, "用户数据不能为空");
 		if (user.getId() == null) {
 			if (exists(user.getUsername())) {
-	        	throw new ManageException(String.format("用户名'%s'已被使用", user.getUsername()));
+	        	throw new DuplicateKeyException(String.format("用户名'%s'已被使用", user.getUsername()));
 	        }
 	        String password = StringUtils.hasText(user.getPassword()) ?  user.getPassword(): DEFAULT_RAW_PASSWORD;
 	        user.setCreateTime(new Date());

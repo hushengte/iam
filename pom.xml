@@ -9,9 +9,11 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<feed.version>1.0.5</feed.version>
+		
   		<spring.version>4.3.0.RELEASE</spring.version>
+  		<spring.data.commons.version>1.12.2.RELEASE</spring.data.commons.version>
   		<spring.security.version>3.2.5.RELEASE</spring.security.version>
+  		<jackson.version>2.6.5</jackson.version>
   		
   		<github.global.server>github</github.global.server>
   	</properties>
@@ -32,12 +34,6 @@
 	</repositories>
 		
 	<dependencies>
-		<dependency>
-			<groupId>com.disciples.feed</groupId>
-			<artifactId>feed-common</artifactId>
-			<version>${feed.version}</version>
-		</dependency>
-		
 		<dependency>
 		    <groupId>com.zaxxer</groupId>
 		    <artifactId>HikariCP-java7</artifactId>
@@ -66,6 +62,12 @@
 			<version>${spring.version}</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>${spring.data.commons.version}</version>
+		</dependency>
+		
 		<!-- Spring Security -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
@@ -76,6 +78,20 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-web</artifactId>
 			<version>${spring.security.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+			<optional>true</optional>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.hibernate.javax.persistence</groupId>
+		    <artifactId>hibernate-jpa-2.1-api</artifactId>
+		    <version>1.0.0.Final</version>
+		    <optional>true</optional>
 		</dependency>
 		
 		<!-- Test -->		

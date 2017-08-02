@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -22,8 +24,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 
-import com.disciples.feed.KeyValue;
-import com.disciples.feed.manage.ManageException;
 import com.disciples.iam.domain.Group;
 import com.disciples.iam.service.GroupManager;
 
@@ -88,13 +88,8 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	}
 	
 	@Override
-	public List<KeyValue> keyValues() {
-		return jdbcTemplate.query(FIND_ID_NAMES, new RowMapper<KeyValue>() {
-			@Override
-			public KeyValue mapRow(ResultSet rs, int rowNum) throws SQLException {
-				return new KeyValue(rs.getInt(1), rs.getString(2));
-			}
-		});
+	public List<Map<String, Object>> keyValues() {
+		return jdbcTemplate.queryForList(FIND_ID_NAMES);
 	}
 	
 	@Override
@@ -120,7 +115,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	public void delete(Integer groupId) {
 		Assert.notNull(groupId, "用户组标识不能为空");
 		if (jdbcTemplate.queryForObject(COUNT_USERS, Long.class, groupId) > 0) {
-			throw new ManageException("用户组存在用户，请移除用户后再操作");
+			throw new DataIntegrityViolationException("用户组存在用户，请删除用户后再操作");
 		}
 		jdbcTemplate.update(DELETE, groupId);
 	}
