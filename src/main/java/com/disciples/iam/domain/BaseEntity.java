@@ -9,7 +9,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.TableGenerator;
 
 @MappedSuperclass
-abstract class BaseEntity implements Serializable {
+public abstract class BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 2436149785969523480L;
     
