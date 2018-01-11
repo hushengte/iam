@@ -8,8 +8,9 @@ import com.disciples.iam.domain.User;
 public abstract class SecurityUtils {
 	
 	/**
-     * 获取已认证的用户
-     */
+	 * 获取已认证的用户
+	 * @return 当前登录的用户
+	 */
     public static User getPrincipal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {

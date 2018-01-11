@@ -26,7 +26,7 @@ public interface UserManager {
 	 * 批量添加用户，如果用户组标识不为空，该用户组为添加用户所在组
 	 * @param users 用户数据
 	 * @param groupId 用户组标识，可以为null
-	 * @return
+	 * @return 添加的用户列表
 	 */
 	List<User> batchInsert(List<User> users, Integer groupId);
 	

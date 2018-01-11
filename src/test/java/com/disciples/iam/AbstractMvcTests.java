@@ -18,10 +18,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.disciples.iam.config.DbConfig;
 import com.disciples.iam.config.MvcConfig;
-import com.disciples.iam.config.ServiceConfig;
+import com.disciples.iam.config.ServiceConfiguration;
 
 @WebAppConfiguration
-@ContextConfiguration(classes = {DbConfig.class, ServiceConfig.class, MvcConfig.class})
+@ContextConfiguration(classes = {DbConfig.class, ServiceConfiguration.class, MvcConfig.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class AbstractMvcTests {
 

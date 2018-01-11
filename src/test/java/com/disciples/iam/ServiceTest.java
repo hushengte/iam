@@ -19,13 +19,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.disciples.iam.config.DbConfig;
-import com.disciples.iam.config.ServiceConfig;
+import com.disciples.iam.config.ServiceConfiguration;
 import com.disciples.iam.domain.Group;
 import com.disciples.iam.domain.User;
 import com.disciples.iam.service.GroupManager;
 import com.disciples.iam.service.UserManager;
 
-@ContextConfiguration(classes = {DbConfig.class, ServiceConfig.class})
+@ContextConfiguration(classes = {DbConfig.class, ServiceConfiguration.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ServiceTest {
 

@@ -13,8 +13,8 @@ import com.disciples.iam.service.impl.DefaultGroupManager;
 import com.disciples.iam.service.impl.DefaultUserManager;
 
 @Configuration
-public class ServiceConfig {
-	
+public class ServiceConfiguration {
+
 	private DefaultUserManager userManager;
 	
 	@Autowired
