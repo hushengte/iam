@@ -19,14 +19,14 @@ public class UserController {
     //用户详情
     @RequestMapping(value = "detail", method = RequestMethod.GET)
     public Object detail() {
-        return Response.success(SecurityUtils.getPrincipal());
+        return SecurityUtils.getPrincipal();
     }
     
     //修改密码
     @RequestMapping(value = "changePassword", method = RequestMethod.POST)
     public Object changePassword(@RequestParam String oldPassword, @RequestParam String newPassword) {
     	userManager.changePassword(oldPassword, newPassword);
-        return Response.success(true);
+        return Boolean.TRUE;
     }
     
 }

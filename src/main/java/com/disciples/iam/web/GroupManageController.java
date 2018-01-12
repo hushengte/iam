@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,34 +35,33 @@ public class GroupManageController {
     		map.put("value", dto.get("name"));
     		result.add(map);
     	}
-        return Response.success(result, result.size());
+        return result;
     }
 	
 	@RequestMapping(value = "list", method = RequestMethod.POST)
     public Object list(@RequestParam int page, @RequestParam int size, String keyword) {
-		Page<Group> pageData = groupManager.find(page, size, keyword);
-        return Response.success(pageData.getContent(), pageData.getTotalElements());
+		return groupManager.find(page, size, keyword);
     }
 	
     @RequestMapping(value = "add", method = RequestMethod.POST)
     public Object save(@RequestBody Group dto) {
-        return Response.success(groupManager.save(dto));
+        return groupManager.save(dto);
     }
     
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public Object update(@RequestBody Group dto) {
-        return Response.success(groupManager.save(dto));
+        return groupManager.save(dto);
     }
     
     @RequestMapping(value = "delete", method = RequestMethod.POST)
     public Object delete(@RequestParam Integer groupId) {
     	groupManager.delete(groupId);
-        return Response.success(true);
+        return Boolean.TRUE;
     }
     
     @RequestMapping(value = "{id}/users", method = RequestMethod.POST)
     public Object users(@PathVariable Integer groupId) {
-        return Response.success(userManager.find(groupId));
+        return userManager.find(groupId);
     }
     
 }

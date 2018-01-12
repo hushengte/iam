@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,18 +25,17 @@ public class UserManageController {
 	
 	@RequestMapping(value = "list", method = RequestMethod.POST)
     public Object list(@RequestParam int page, @RequestParam int size, Integer field, String keyword) {
-		Page<User> pageData = userManager.find(page, size, field, keyword);
-        return Response.success(pageData.getContent(), pageData.getTotalElements());
+		return userManager.find(page, size, field, keyword);
     }
 	
     @RequestMapping(value = "add", method = RequestMethod.POST)
     public Object save(@RequestBody User dto) {
-        return Response.success(userManager.save(dto));
+        return userManager.save(dto);
     }
     
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public Object update(@RequestBody User dto) {
-        return Response.success(userManager.save(dto));
+        return userManager.save(dto);
     }
     
     @RequestMapping(value = "delete", method = RequestMethod.POST)
@@ -48,36 +46,36 @@ public class UserManageController {
         	userIds.add((Integer)dto.get("id"));
         }
         userManager.delete(userIds);
-        return Response.success(dtoList.size());
+        return dtoList.size();
     }
     
     @RequestMapping(value = "{id}/groupIds", method = RequestMethod.GET)
     public Object groupIds(@PathVariable Integer id) {
-        return Response.success(userManager.groupIds(id));
+        return userManager.groupIds(id);
     }
     
     @RequestMapping(value = "{id}/updateGroups", method = RequestMethod.POST)
     public Object updateGroups(@PathVariable Integer id, @RequestParam List<Integer> groupIds) {
     	userManager.updateGroups(id, groupIds);
-        return Response.success(groupIds);
+        return groupIds;
     }
     
     @RequestMapping(value = "{id}/enable", method = RequestMethod.POST)
     public Object enable(@PathVariable Integer id) {
     	userManager.enable(id);
-        return Response.success(true);
+        return Boolean.TRUE;
     }
     
     @RequestMapping(value = "{id}/disable", method = RequestMethod.POST)
     public Object disable(@PathVariable Integer id) {
     	userManager.disable(id);
-        return Response.success(true);
+    	return Boolean.TRUE;
     }
     
     @RequestMapping(value = "{id}/resetPassword", method = RequestMethod.POST)
     public Object resetPassword(@PathVariable Integer id) {
     	userManager.resetPassword(id);
-        return Response.success(true);
+    	return Boolean.TRUE;
     }
     
 }
