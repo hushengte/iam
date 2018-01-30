@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -16,7 +17,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "iam_user")
+@Table(name = "iam_user", indexes = {
+	@Index(columnList = "username"), @Index(columnList = "name"), 
+	@Index(columnList = "email"), @Index(columnList = "phone")
+})
 public class User extends BaseEntity implements UserDetails {
     
 	private String username;

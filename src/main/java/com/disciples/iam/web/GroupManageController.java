@@ -1,10 +1,5 @@
 package com.disciples.iam.web;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,14 +23,7 @@ public class GroupManageController {
 	
 	@RequestMapping(value = "keyValues", method = RequestMethod.GET)
     public Object keyValues() {
-    	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-    	for (Map<String, Object> dto : groupManager.keyValues()) {
-    		Map<String, Object> map = new HashMap<String, Object>();
-    		map.put("key", dto.get("id"));
-    		map.put("value", dto.get("name"));
-    		result.add(map);
-    	}
-        return result;
+        return groupManager.keyValues();
     }
 	
 	@RequestMapping(value = "list", method = RequestMethod.POST)

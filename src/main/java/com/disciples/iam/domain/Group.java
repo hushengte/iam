@@ -3,11 +3,12 @@ package com.disciples.iam.domain;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "iam_group")
+@Table(name = "iam_group", indexes = @Index(columnList = "name"))
 public class Group extends BaseEntity {
     
     private String name;
