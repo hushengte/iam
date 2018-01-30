@@ -38,8 +38,10 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	
 	private static final String COUNT_USERS = "select count(user_id) from iam_user_group where group_id = ?";
 	private static final String DELETE_USER_GROUPS = "delete from iam_user_group where group_id = ? and user_id in (%s)";
-	private static final String FIND_BY_USER = "select g.id, g.name, g.roles, g.create_time from iam_group g"
+	private static final String FIND_BY_USER_ID = "select g.id, g.name, g.roles, g.create_time from iam_group g"
 			+ " left join iam_user_group ug on g.id = ug.group_id where ug.user_id = ?";
+	private static final String FIND_BY_USERNAME = "select g.id, g.name, g.roles, g.create_time from iam_group g"
+			+ " left join iam_user_group ug on g.id = ug.group_id left join iam_user u on ug.user_id = u.id where u.username = ?";
 	
 	private JdbcTemplate jdbcTemplate;
 	
@@ -79,7 +81,12 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	
 	@Override
 	public List<Group> find(Integer userId) {
-		return jdbcTemplate.query(FIND_BY_USER, this, userId);
+		return jdbcTemplate.query(FIND_BY_USER_ID, this, userId);
+	}
+	
+	@Override
+	public List<Group> find(String username) {
+		return jdbcTemplate.query(FIND_BY_USERNAME, this, username);
 	}
 	
 	@Override
