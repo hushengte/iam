@@ -4,17 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
-import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -30,17 +24,9 @@ import com.disciples.iam.service.UserManager;
 public class ServiceTest {
 
 	@Autowired
-	private DataSource dataSource;
-	
-	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private GroupManager groupManager;
-	
-	@Before
-	public void setUp() {
-		DatabasePopulatorUtils.execute(new ResourceDatabasePopulator(new ClassPathResource("/mysql.sql")), dataSource);
-	}
 	
 	@Test
 	public void testAll() {
@@ -72,8 +58,8 @@ public class ServiceTest {
 		for (int i = 0; i < groups.size(); i++) {
 			Map<String, Object> kv = kvs.get(i);
 			Group saved = groups.get(i);
-			Assert.assertEquals((Integer)kv.get("id"), saved.getId());
-			Assert.assertEquals((String)kv.get("name"), saved.getName());
+			Assert.assertEquals((Integer)kv.get("key"), saved.getId());
+			Assert.assertEquals((String)kv.get("value"), saved.getName());
 		}
 	}
 	

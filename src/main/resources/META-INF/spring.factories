@@ -1,3 +1,4 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.disciples.iam.config.IamMvcAutoConfiguration
+com.disciples.iam.config.IamMvcAutoConfiguration,\
+com.disciples.iam.config.IamOAuth2AutoConfiguration

@@ -49,8 +49,9 @@
 		<hikaricp-java7.version>2.4.9</hikaricp-java7.version>
 		<mysql.version>5.1.39</mysql.version>
   		<spring.version>4.3.3.RELEASE</spring.version>
-  		<spring.boot.autoconfigure.version>1.4.1.RELEASE</spring.boot.autoconfigure.version>
+  		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
   		<spring-data-commons.version>1.12.3.RELEASE</spring-data-commons.version>
+  		<freemarker.version>2.3.25-incubating</freemarker.version>
   		<spring-security.version>4.1.3.RELEASE</spring-security.version>
   		<spring-security-oauth.version>2.0.11.RELEASE</spring-security-oauth.version>
   		<jackson.version>2.8.3</jackson.version>
@@ -112,13 +113,31 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
-			<version>${spring.boot.autoconfigure.version}</version>
+			<version>${spring-boot.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>${freemarker.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${spring.version}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
 			<version>${spring.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

@@ -31,7 +31,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 
 	private static final String COUNT = "select count(id) from iam_group";
 	private static final String FIND = "select id, name, roles, create_time from iam_group";
-	private static final String FIND_ID_NAMES = "select id as key, name as value from iam_group";
+	private static final String FIND_ID_NAMES = "select `id` as `key`, `name` as `value` from iam_group";
 	private static final String INSERT = "insert into iam_group (name, roles, create_time) values (?,?,?)";
 	private static final String UPDATE = "update iam_group set name = ?, roles = ? where id = ?";
 	private static final String DELETE = "delete from iam_group where id = ?";

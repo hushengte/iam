@@ -65,6 +65,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	
 	private static final String COUNT_GROUP_BY_ID = "select count(id) from iam_group where id = ?";
 	
+	private static final String PREFIX_ROLE = "ROLE_";
 	private static final String ROLE_USER = "ROLE_USER";
 	private static final String DEFAULT_RAW_PASSWORD = "123456";
     private static final Md5PasswordEncoder MD5_ENCODER = new Md5PasswordEncoder();
@@ -133,6 +134,9 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
     		List<SimpleGrantedAuthority> authorties = new ArrayList<SimpleGrantedAuthority>();
         	for (String role : roleArray) {
         		authorties.add(new SimpleGrantedAuthority(role));
+        		if (!role.startsWith(PREFIX_ROLE)) {
+        			authorties.add(new SimpleGrantedAuthority(PREFIX_ROLE + role));
+        		}
         	}
         	return authorties;
     	}
