@@ -29,14 +29,6 @@ public class ServiceTest {
 	private GroupManager groupManager;
 	
 	@Test
-	public void testAll() {
-		testGroupSaveAndFind();
-		testGroupKeyValues();
-		
-		testUserSaveAndFind();
-	}
-	
-	@Test
 	public void testGroupSaveAndFind() {
 		Integer groupId = groupManager.save(new Group(null, "group-b", "a")).getId();
 		Assert.assertNotNull(groupId);
@@ -44,7 +36,8 @@ public class ServiceTest {
 		groupManager.save(new Group(null, "group-bbaa", "bbaa"));
 		groupManager.save(new Group(null, "group-ccc", null));
 		
-		Assert.assertEquals(groupManager.find(0, 10, "group").getTotalElements(), 3);
+		Page<Group> groups = groupManager.find(0, 10, "group");
+		Assert.assertEquals(3, groups.getTotalElements());
 		Page<Group> groupPage = groupManager.find(0, 10, "a");
 		Assert.assertEquals(groupPage.getTotalElements(), 2);
 		Assert.assertEquals(groupPage.getContent().get(0).getName(), "group-a");
@@ -90,7 +83,7 @@ public class ServiceTest {
 		Assert.assertEquals(2, saved.size());
 		
 		Page<User> userPage = userManager.find(0, 10, groupId, "ddd");
-		Assert.assertEquals(2, userPage.getTotalElements());
+		Assert.assertEquals(3, userPage.getTotalElements());
 	}
 	
 }
