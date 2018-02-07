@@ -17,7 +17,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 @Configuration
 @ConditionalOnClass({EnableAuthorizationServer.class, EnableResourceServer.class})
 @AutoConfigureBefore(OAuth2AutoConfiguration.class)
-@Import({AuthorizationServerConfiguration.class, ResourceServerConfiguration.class})
+@Import({AuthorizationServerConfiguration.class, ResourceServerConfiguration.class, OAuth2AuthorizationSecurityConfiguration.class})
 public class IamOAuth2AutoConfiguration {
 	
 	@Autowired
