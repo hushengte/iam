@@ -1,5 +1,11 @@
 package com.disciples.iam.config;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -8,8 +14,12 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.util.WebUtils;
 
 /**
  * After IgnoredPathsWebSecurityConfigurerAdapter
@@ -33,22 +43,46 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		// @formatter: off
 		http
+			.requestMatchers()
+				.antMatchers("/admin/**", "/user/**", "/login.do")
+				.and()
 			.authorizeRequests()
 				.antMatchers("/admin/**").access("hasRole('ADMIN')")
 				.antMatchers("/user/**").access("hasRole('ROLE_USER')")
 				.and()
 			.csrf().disable()
 			.formLogin()
-				.loginPage("/login.html").permitAll()
+				.loginPage("/login.html")
 				.loginProcessingUrl("/login.do").defaultSuccessUrl("/")
-				.failureForwardUrl("/authfailed.do")
+				.failureHandler(new UsernameAwareAuthenticationFailureHandler("/login.html?error=true"))
+				.permitAll()
 				.and()
 			.logout()
 				.logoutUrl("/logout.do").logoutSuccessUrl("/")
 				.and()
 			.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login.html"))
 			;
+		// @formatter: on
+	}
+	
+	private static class UsernameAwareAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+		
+		public UsernameAwareAuthenticationFailureHandler(String defaultFailureUrl) {
+			super(defaultFailureUrl);
+		}
+
+		@Override
+		public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+		        AuthenticationException exception) throws IOException, ServletException {
+			
+			String name = UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
+			WebUtils.setSessionAttribute(request, name, request.getParameter(name));
+			
+			super.onAuthenticationFailure(request, response, exception);
+		}
+		
 	}
 	
 }

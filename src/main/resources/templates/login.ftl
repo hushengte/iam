@@ -1,3 +1,4 @@
+<#import "/spring.ftl" as spring/>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +8,7 @@
     
     <title>登录</title>
     
-    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="<@spring.url '/css/bootstrap.min.css'/>"/>
 </head>
 <body style="background-color: #e4e5e6;">
     <div class="col-md-10" style="margin-top: 130px;">
@@ -21,7 +22,7 @@
 	       <#if error??><div class="col-md-offset-5">
 	                		<label class="text-danger">帐号或者密码错误</label>
 	                	</div></#if>
-	                    <form class="form-horizontal" role="form" name="loginForm" method="post" action="login.do">
+	                    <form class="form-horizontal" role="form" name="loginForm" method="post" action="<@spring.url '/login.do'/>">
 	                    	<div class="form-group">
 						        <label for="username" class="col-md-3 control-label text-success">帐号：</label>
 						        <div class="col-md-9">
