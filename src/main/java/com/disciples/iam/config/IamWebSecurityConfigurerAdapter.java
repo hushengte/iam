@@ -46,7 +46,7 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		// @formatter: off
 		http
 			.requestMatchers()
-				.antMatchers("/admin/**", "/user/**", "/login.do")
+				.antMatchers("/admin/**", "/user/**", "/login.do", "/logout.do")
 				.and()
 			.authorizeRequests()
 				.antMatchers("/admin/**").access("hasRole('ADMIN')")
