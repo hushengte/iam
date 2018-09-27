@@ -30,7 +30,7 @@ public class ServiceConfiguration {
 		populator.execute(dataSource);
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 		Long userCount = jdbcTemplate.queryForObject("select count(id) from iam_user", Long.class);
-		if (userCount == null || userCount.equals(0)) {
+		if (userCount == null || userCount.intValue() == 0) {
 			populator.setScripts(new ClassPathResource("/database/mysql/data.sql"));
 			populator.execute(dataSource);
 		}

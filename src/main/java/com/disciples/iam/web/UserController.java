@@ -25,7 +25,7 @@ public class UserController {
     //修改密码
     @RequestMapping(value = "changePassword", method = RequestMethod.POST)
     public Object changePassword(@RequestParam String oldPassword, @RequestParam String newPassword) {
-    	userManager.changePassword(oldPassword, newPassword);
+    	userManager.changePassword(SecurityUtils.getPrincipal().getId(), oldPassword, newPassword);
         return Boolean.TRUE;
     }
     

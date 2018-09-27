@@ -25,13 +25,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -293,18 +289,18 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	}
 	
 	@Override
-	public void changePassword(String oldPassword, String newPassword) throws AuthenticationException {
-		if (!StringUtils.hasText(oldPassword) || !StringUtils.hasText(newPassword)) {
-            throw new IllegalArgumentException("密码不能为空");
-        }
-		Authentication currentUser = SecurityContextHolder.getContext().getAuthentication();
+	public void changePassword(Integer userId, String oldPassword, String newPassword) throws IllegalArgumentException {
+	    Assert.notNull(userId, "用户标识不能为空");
+	    Assert.isTrue(StringUtils.hasText(oldPassword) && StringUtils.hasText(newPassword), "密码不能为空");
+	    
+		User currentUser = findOne(userId);
 		if (currentUser == null) {
-			throw new AccessDeniedException("请认证后操作");
+			throw new IllegalArgumentException("不存在用户：id=" + userId);
 		}
-		if (!((UserDetails)currentUser.getPrincipal()).getPassword().equals(MD5_ENCODER.encodePassword(oldPassword, null))) {
+		if (!currentUser.getPassword().equals(MD5_ENCODER.encodePassword(oldPassword, null))) {
             throw new IllegalArgumentException("旧密码错误.");
         }
-		jdbcTemplate.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(newPassword, null), currentUser.getName());
+		jdbcTemplate.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(newPassword, null), currentUser.getId());
 	}
 
 	@Override

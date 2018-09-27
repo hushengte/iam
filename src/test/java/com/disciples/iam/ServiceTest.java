@@ -1,14 +1,18 @@
 package com.disciples.iam;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -31,17 +35,17 @@ public class ServiceTest {
 	@Test
 	public void testGroupSaveAndFind() {
 		Integer groupId = groupManager.save(new Group(null, "group-b", "a")).getId();
-		Assert.assertNotNull(groupId);
-		Assert.assertEquals(groupManager.save(new Group(groupId, "group-a", "a")).getName(), "group-a");
+		assertNotNull(groupId);
+		assertEquals(groupManager.save(new Group(groupId, "group-a", "a")).getName(), "group-a");
 		groupManager.save(new Group(null, "group-bbaa", "bbaa"));
 		groupManager.save(new Group(null, "group-ccc", null));
 		
 		Page<Group> groups = groupManager.find(0, 10, "group");
-		Assert.assertEquals(3, groups.getTotalElements());
+		assertEquals(3, groups.getTotalElements());
 		Page<Group> groupPage = groupManager.find(0, 10, "a");
-		Assert.assertEquals(groupPage.getTotalElements(), 2);
-		Assert.assertEquals(groupPage.getContent().get(0).getName(), "group-a");
-		Assert.assertEquals(groupPage.getContent().get(1).getName(), "group-bbaa");
+		assertEquals(groupPage.getTotalElements(), 2);
+		assertEquals(groupPage.getContent().get(0).getName(), "group-a");
+		assertEquals(groupPage.getContent().get(1).getName(), "group-bbaa");
 	}
 	
 	@Test
@@ -51,8 +55,8 @@ public class ServiceTest {
 		for (int i = 0; i < groups.size(); i++) {
 			Map<String, Object> kv = kvs.get(i);
 			Group saved = groups.get(i);
-			Assert.assertEquals((Integer)kv.get("key"), saved.getId());
-			Assert.assertEquals((String)kv.get("value"), saved.getName());
+			assertEquals((Integer)kv.get("key"), saved.getId());
+			assertEquals((String)kv.get("value"), saved.getName());
 		}
 	}
 	
@@ -63,7 +67,7 @@ public class ServiceTest {
 		users.add(new User("bbb", null, "bbbname", "bbb@gmail.com", "18767122509"));
 		users.add(new User("ccc", null, "cccname", "ccc@gmail.com", "18767122509"));
 		List<User> saved = userManager.batchInsert(users, null);
-		Assert.assertEquals(3, saved.size());
+		assertEquals(3, saved.size());
 		
 		users = new ArrayList<User>();
 		users.add(new User("bbb", null, "bbbname", "bbb@gmail.com", "18767122509"));
@@ -72,18 +76,27 @@ public class ServiceTest {
 		User savedUser = userManager.save(new User("ddd", null, "ddd-name", "ddd@gmail.com", "18767122509"));
 		savedUser.setName("dddname");
 		users.add(userManager.save(savedUser));
-		Assert.assertTrue(userManager.exists(savedUser.getUsername()));
-		Assert.assertEquals(savedUser.getName(), userManager.findOneByUsername(savedUser.getUsername()).getName());
+		assertTrue(userManager.exists(savedUser.getUsername()));
+		assertEquals(savedUser.getName(), userManager.findOneByUsername(savedUser.getUsername()).getName());
 		
 		users.add(new User("eeeddd", null, "eeedddname", "eee@gmail.com", "18767122509"));
 		users.add(new User("fffddd", null, "eeefffname", "fff@gmail.com", "18767122509"));
 		List<Map<String, Object>> kvs = groupManager.keyValues();
 		Integer groupId = kvs.size() > 0 ? (Integer)kvs.get(0).get("id") : null;
 		saved = userManager.batchInsert(users, groupId);
-		Assert.assertEquals(2, saved.size());
+		assertEquals(2, saved.size());
 		
 		Page<User> userPage = userManager.find(0, 10, groupId, "ddd");
-		Assert.assertEquals(3, userPage.getTotalElements());
+		assertEquals(3, userPage.getTotalElements());
+	}
+	
+	@Test
+	public void testChangePassword() {
+	    User user = userManager.save(new User("test", null, "testname", "test@gmail.com", "18767122509"));
+	    String newRawPassword = "1234567";
+	    userManager.changePassword(user.getId(), "123456", newRawPassword);
+	    String newEncodedPassword = new Md5PasswordEncoder().encodePassword(newRawPassword, null);
+	    assertTrue(userManager.findOne(user.getId()).getPassword().equals(newEncodedPassword));
 	}
 	
 }

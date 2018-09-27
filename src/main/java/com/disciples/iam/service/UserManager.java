@@ -36,7 +36,7 @@ public interface UserManager {
 	List<Integer> groupIds(Integer userId);
 	int updateGroups(Integer userId, List<Integer> groupIds);
 	
-	void changePassword(String oldPassword, String newPassword);
+	void changePassword(Integer userId, String oldPassword, String newPassword);
 	void resetPassword(Integer userId);
 	
 	void enable(Integer userId);
