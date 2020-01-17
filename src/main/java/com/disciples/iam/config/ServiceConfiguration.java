@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -36,9 +37,14 @@ public class ServiceConfiguration {
 		}
 	}
 	
+	@Bean
+    public JdbcOperations jdbcTemplate() {
+        return new JdbcTemplate(dataSource);
+    }
+	
 	private DefaultUserManager getDefaultUserManager() {
 		if (userManager == null) {
-			userManager = new DefaultUserManager(dataSource);
+			userManager = new DefaultUserManager(jdbcTemplate());
 		}
 		return userManager;
 	}
@@ -55,7 +61,7 @@ public class ServiceConfiguration {
 	
 	@Bean
 	public GroupManager groupManager() {
-		return new DefaultGroupManager(dataSource);
+		return new DefaultGroupManager(jdbcTemplate());
 	}
 	
 }

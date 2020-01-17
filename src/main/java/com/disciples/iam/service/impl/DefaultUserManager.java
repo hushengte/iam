@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
@@ -21,7 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -66,11 +64,11 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	private static final String DEFAULT_RAW_PASSWORD = "123456";
     private static final Md5PasswordEncoder MD5_ENCODER = new Md5PasswordEncoder();
     
-	private JdbcTemplate jdbcTemplate;
+	private JdbcOperations jdbcOperations;
 	
-	public DefaultUserManager(DataSource dataSource) {
-		Assert.notNull(dataSource, "DataSource is required.");
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	public DefaultUserManager(JdbcOperations jdbcOperations) {
+		Assert.notNull(jdbcOperations, "JdbcOperations is required.");
+		this.jdbcOperations = jdbcOperations;
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	
 	@Override
 	public User findOneByUsername(String username) {
-		List<User> users = jdbcTemplate.query(SELECT_BY_USERNAME, this, username);
+		List<User> users = jdbcOperations.query(SELECT_BY_USERNAME, this, username);
 		if (users.size() > 0) {
 			return users.get(0);
 		}
@@ -100,7 +98,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	
 	@Override
 	public User findOne(Integer id) {
-		List<User> users = jdbcTemplate.query(SELECT_BY_ID, this, id);
+		List<User> users = jdbcOperations.query(SELECT_BY_ID, this, id);
 		if (users.size() > 0) {
 			return users.get(0);
 		}
@@ -113,7 +111,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		if (user == null) {
             throw new UsernameNotFoundException(String.format("用户 '%s' 不存在", username));
         }
-		List<String> groupRoles = jdbcTemplate.queryForList(FIND_ALL_ROLES_BY_USERNAME, String.class, username);
+		List<String> groupRoles = jdbcOperations.queryForList(FIND_ALL_ROLES_BY_USERNAME, String.class, username);
         Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(ROLE_USER));
         for (String groupRole : groupRoles) {
@@ -156,26 +154,26 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 			args.add(param);
 			args.add(param);
 		}
-		Long count = jdbcTemplate.queryForObject(String.format(sqlFormat.toString(), "count(u.id)"), Long.class, args.toArray());
+		Long count = jdbcOperations.queryForObject(String.format(sqlFormat.toString(), "count(u.id)"), Long.class, args.toArray());
 		if (count == null || count == 0) {
 			return new PageImpl<User>(Collections.<User>emptyList());
 		}
 		sqlFormat.append(" limit ?,?");
 		args.add(pageable.getPageNumber() * pageable.getPageSize());
 		args.add(pageable.getPageSize());
-		List<User> content = jdbcTemplate.query(String.format(sqlFormat.toString(), COMMON_COLUMNS), this, args.toArray());
+		List<User> content = jdbcOperations.query(String.format(sqlFormat.toString(), COMMON_COLUMNS), this, args.toArray());
 		return new PageImpl<User>(content, pageable, count);
 	}
 	
 	@Override
 	public List<User> find(Integer groupId) {
 		Assert.notNull(groupId, "用户组标识不能为空");
-		return jdbcTemplate.query(String.format(FIND_BY_GROUP, COMMON_COLUMNS), this, groupId);
+		return jdbcOperations.query(String.format(FIND_BY_GROUP, COMMON_COLUMNS), this, groupId);
 	}
 	
 	@Override
 	public boolean exists(String username) {
-		List<Integer> userIds = jdbcTemplate.queryForList(EXIST, Integer.class, username);
+		List<Integer> userIds = jdbcOperations.queryForList(EXIST, Integer.class, username);
 		return userIds.size() > 0;
 	}
 	
@@ -197,14 +195,14 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	        int[] sqlTypes = new int[] {Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP};
 	        PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(INSERT, sqlTypes);
 	        factory.setGeneratedKeysColumnNames("id");
-	        jdbcTemplate.update(factory.newPreparedStatementCreator(params), keyHolder);
+	        jdbcOperations.update(factory.newPreparedStatementCreator(params), keyHolder);
 	        
 	        user.setId(NumberUtils.convertNumberToTargetClass(keyHolder.getKey(), Integer.class));
 	        user.setPassword(null);
 	        return user;
 		}
 		//执行更新
-		jdbcTemplate.update(UPDATE, user.getName(), user.getEmail(), user.getPhone(), user.getRoles(), user.getId());
+		jdbcOperations.update(UPDATE, user.getName(), user.getEmail(), user.getPhone(), user.getRoles(), user.getId());
         return user;
 	}
 	
@@ -218,7 +216,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		}
 		String placeholders = StringUtils.collectionToCommaDelimitedString(Collections.nCopies(usernames.size(), "?"));
 		String findExistUsernamesSql = String.format("select username from iam_user where username in (%s)", placeholders);
-		List<String> existUsernames = jdbcTemplate.queryForList(findExistUsernamesSql, String.class, usernames.toArray());
+		List<String> existUsernames = jdbcOperations.queryForList(findExistUsernamesSql, String.class, usernames.toArray());
 		Set<String> existUsernameSet = new HashSet<String>(existUsernames);
 		
 		List<String> insertPlaceholders = new ArrayList<String>();
@@ -246,7 +244,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(insertSql.toString(), sqlTypes);
 		factory.setGeneratedKeysColumnNames("id");
 		GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-		jdbcTemplate.update(factory.newPreparedStatementCreator(args.toArray()), keyHolder);
+		jdbcOperations.update(factory.newPreparedStatementCreator(args.toArray()), keyHolder);
 		
 		List<Map<String, Object>> keyList = keyHolder.getKeyList();
 		if (keyList.size() == savedUsers.size()) {
@@ -255,7 +253,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 				Integer id = genKey instanceof Integer ? (Integer)genKey : Integer.parseInt(genKey.toString());
 				savedUsers.get(i).setId(id);
 			}
-			if (groupId != null && jdbcTemplate.queryForObject(COUNT_GROUP_BY_ID, Long.class, groupId) > 0) {
+			if (groupId != null && jdbcOperations.queryForObject(COUNT_GROUP_BY_ID, Long.class, groupId) > 0) {
 				args = new ArrayList<Object>();
 				for (User user : savedUsers) {
 					args.add(user.getId());
@@ -263,7 +261,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 				}
 				insertSql = new StringBuilder("insert into iam_user_group (user_id, group_id) values ");
 				insertSql.append(StringUtils.collectionToCommaDelimitedString(Collections.nCopies(savedUsers.size(), "(?,?)")));
-				jdbcTemplate.update(insertSql.toString(), args.toArray());
+				jdbcOperations.update(insertSql.toString(), args.toArray());
 			}
 		} else {
 			LOG.warn("Batch insert user illegal state: keyList.size() != savedUsers.size()");
@@ -274,8 +272,8 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	@Override
 //	@Transactional TODO:
 	public void delete(Integer userId) {
-		jdbcTemplate.update(DELETE_USER_GROUPS_BY_USER_ID, userId);
-		jdbcTemplate.update(DELETE_BY_ID, userId);
+		jdbcOperations.update(DELETE_USER_GROUPS_BY_USER_ID, userId);
+		jdbcOperations.update(DELETE_BY_ID, userId);
 	}
 
 	@Override
@@ -283,8 +281,8 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	public void delete(List<Integer> userIds) {
 		if (!CollectionUtils.isEmpty(userIds)) {
 			String placeholders = StringUtils.collectionToCommaDelimitedString(Collections.nCopies(userIds.size(), "?"));
-			jdbcTemplate.update(String.format(DELETE_USER_GROUPS_BY_USER_ID_IN, placeholders), userIds.toArray());
-			jdbcTemplate.update(String.format(DELETE_BY_ID_IN, placeholders), userIds.toArray());
+			jdbcOperations.update(String.format(DELETE_USER_GROUPS_BY_USER_ID_IN, placeholders), userIds.toArray());
+			jdbcOperations.update(String.format(DELETE_BY_ID_IN, placeholders), userIds.toArray());
 		}
 	}
 	
@@ -300,12 +298,12 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 		if (!currentUser.getPassword().equals(MD5_ENCODER.encodePassword(oldPassword, null))) {
             throw new IllegalArgumentException("旧密码错误.");
         }
-		jdbcTemplate.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(newPassword, null), currentUser.getId());
+		jdbcOperations.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(newPassword, null), currentUser.getId());
 	}
 
 	@Override
 	public List<Integer> groupIds(Integer userId) {
-		return jdbcTemplate.queryForList("select m.group_id from iam_user u, iam_user_group m where u.id = m.user_id and u.id = ?",  Integer.class, userId);
+		return jdbcOperations.queryForList("select m.group_id from iam_user u, iam_user_group m where u.id = m.user_id and u.id = ?",  Integer.class, userId);
 	}
 	
 	private int batchInsertMembership(Integer userId, List<Integer> groupIds) {
@@ -317,17 +315,17 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
     		args.add(groupId);
     	}
     	batch.deleteCharAt(batch.length() - 1);
-    	return jdbcTemplate.update(batch.toString(), args.toArray());
+    	return jdbcOperations.update(batch.toString(), args.toArray());
 	}
 	
 	@Override
 //	@Transactional
 	public int updateGroups(Integer userId, List<Integer> groupIds) {
 		if (CollectionUtils.isEmpty(groupIds)) {
-			return jdbcTemplate.update("delete from iam_user_group where user_id = ?", userId);
+			return jdbcOperations.update("delete from iam_user_group where user_id = ?", userId);
         }
         List<Integer> addList = new ArrayList<Integer>();
-        List<Integer> currentGroupIds = jdbcTemplate.queryForList("select group_id from iam_user_group where user_id = ?", Integer.class, userId);
+        List<Integer> currentGroupIds = jdbcOperations.queryForList("select group_id from iam_user_group where user_id = ?", Integer.class, userId);
         if (CollectionUtils.isEmpty(currentGroupIds)) {
         	return batchInsertMembership(userId, groupIds);
         }
@@ -353,27 +351,27 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
         	List<Object> args = new ArrayList<Object>();
         	args.add(userId);
         	args.addAll(deleteList);
-        	jdbcTemplate.update(deleteSql.toString(), args.toArray());
+        	jdbcOperations.update(deleteSql.toString(), args.toArray());
         }
         if (!addList.isEmpty()) {
         	updateCount += batchInsertMembership(userId, addList);
-        }
+        }   
 		return updateCount;
 	}
 	
 	@Override
 	public void resetPassword(Integer userId) {
-		jdbcTemplate.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(DEFAULT_RAW_PASSWORD, null), userId);
+		jdbcOperations.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(DEFAULT_RAW_PASSWORD, null), userId);
 	}
 	
 	@Override
 	public void enable(Integer userId) {
-		jdbcTemplate.update("update iam_user set enabled = 1 where id = ?", userId);
+		jdbcOperations.update("update iam_user set enabled = 1 where id = ?", userId);
 	}
 
 	@Override
 	public void disable(Integer userId) {
-		jdbcTemplate.update("update iam_user set enabled = 0 where id = ?", userId);
+		jdbcOperations.update("update iam_user set enabled = 0 where id = ?", userId);
 	}
 
 }

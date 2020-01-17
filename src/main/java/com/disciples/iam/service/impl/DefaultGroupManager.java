@@ -9,14 +9,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -43,11 +41,11 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	private static final String FIND_BY_USERNAME = "select g.id, g.name, g.roles, g.create_time from iam_group g"
 			+ " left join iam_user_group ug on g.id = ug.group_id left join iam_user u on ug.user_id = u.id where u.username = ?";
 	
-	private JdbcTemplate jdbcTemplate;
+	private JdbcOperations jdbcOperations;
 	
-	public DefaultGroupManager(DataSource dataSource) {
-		Assert.notNull(dataSource, "DataSource is required.");
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	public DefaultGroupManager(JdbcOperations jdbcOperations) {
+		Assert.notNull(jdbcOperations, "JdbcOperations is required.");
+		this.jdbcOperations = jdbcOperations;
 	}
 	
 	@Override
@@ -69,34 +67,35 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 			condition.append(" where name like ?");
 			args.add("%" + keyword.trim() + "%");
 		}
-		Long count = jdbcTemplate.queryForObject(COUNT + condition.toString(), Long.class, args.toArray());
-		if (count == null || count == 0) {
-			return new PageImpl<Group>(Collections.<Group>emptyList());
+		Long count = jdbcOperations.queryForObject(COUNT + condition.toString(), Long.class, args.toArray());
+		List<Group> content = Collections.emptyList();
+		if (count > 0) {
+		    condition.append(" limit ?,?");
+	        args.add(pageable.getPageNumber() * pageable.getPageSize());
+	        args.add(pageable.getPageSize());
+	        content = jdbcOperations.query(FIND + condition.toString(), this, args.toArray());
 		}
-		condition.append(" limit ?,?");
-		args.add(pageable.getPageNumber() * pageable.getPageSize());
-		args.add(pageable.getPageSize());
-		return new PageImpl<Group>(jdbcTemplate.query(FIND + condition.toString(), this, args.toArray()), pageable, count);
+		return new PageImpl<>(content, pageable, count);
 	}
 	
 	@Override
 	public List<Group> find(Integer userId) {
-		return jdbcTemplate.query(FIND_BY_USER_ID, this, userId);
+		return jdbcOperations.query(FIND_BY_USER_ID, this, userId);
 	}
 	
 	@Override
 	public List<Group> find(String username) {
-		return jdbcTemplate.query(FIND_BY_USERNAME, this, username);
+		return jdbcOperations.query(FIND_BY_USERNAME, this, username);
 	}
 	
 	@Override
 	public List<Group> findAll() {
-		return jdbcTemplate.query(FIND, this);
+		return jdbcOperations.query(FIND, this);
 	}
 	
 	@Override
 	public List<Map<String, Object>> keyValues() {
-		return jdbcTemplate.queryForList(FIND_ID_NAMES);
+		return jdbcOperations.queryForList(FIND_ID_NAMES);
 	}
 	
 	@Override
@@ -109,22 +108,22 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 			PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(INSERT, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP);
 			factory.setGeneratedKeysColumnNames("id");
 			GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-	        jdbcTemplate.update(factory.newPreparedStatementCreator(new Object[] {group.getName(), group.getRoles(), group.getCreateTime()}), keyHolder);
+			jdbcOperations.update(factory.newPreparedStatementCreator(new Object[] {group.getName(), group.getRoles(), group.getCreateTime()}), keyHolder);
 	        
 	        group.setId(NumberUtils.convertNumberToTargetClass(keyHolder.getKey(), Integer.class));
 	    	return group;
 		}
-		jdbcTemplate.update(UPDATE, group.getName(), group.getRoles(), group.getId());
+		jdbcOperations.update(UPDATE, group.getName(), group.getRoles(), group.getId());
         return group;
 	}
 
 	@Override
 	public void delete(Integer groupId) {
 		Assert.notNull(groupId, "用户组标识不能为空");
-		if (jdbcTemplate.queryForObject(COUNT_USERS, Long.class, groupId) > 0) {
+		if (jdbcOperations.queryForObject(COUNT_USERS, Long.class, groupId) > 0) {
 			throw new DataIntegrityViolationException("用户组存在用户，请删除用户后再操作");
 		}
-		jdbcTemplate.update(DELETE, groupId);
+		jdbcOperations.update(DELETE, groupId);
 	}
 
 	@Override
@@ -140,7 +139,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 		int size = nonNullList.size();
 		if (size > 0) {
 			String sql = String.format(DELETE_USER_GROUPS, StringUtils.collectionToCommaDelimitedString(Collections.nCopies(size, "?")));
-			jdbcTemplate.update(sql, nonNullList.toArray());
+			jdbcOperations.update(sql, nonNullList.toArray());
 		}
 	}
 
