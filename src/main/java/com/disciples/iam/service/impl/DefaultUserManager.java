@@ -272,6 +272,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	@Override
 //	@Transactional TODO:
 	public void delete(Integer userId) {
+	    Assert.notNull(userId, "用户标识不能为空");
 		jdbcOperations.update(DELETE_USER_GROUPS_BY_USER_ID, userId);
 		jdbcOperations.update(DELETE_BY_ID, userId);
 	}

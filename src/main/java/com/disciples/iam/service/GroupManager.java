@@ -21,7 +21,7 @@ public interface GroupManager {
     
     /**
      * 查找用户组分页
-     * @param page 页码，从1开始
+     * @param page 页码，从0开始
      * @param size 页记录数
      * @param name 用户组名称关键字 
      * @return 用户组分页数据

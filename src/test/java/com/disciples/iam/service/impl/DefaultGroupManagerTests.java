@@ -178,16 +178,22 @@ public class DefaultGroupManagerTests {
             assertEquals(group.getName(), kv.get("value"));
         });
         
-        Page<Group> page1 = manager.find(1, 10, "g");
+        Page<Group> page1 = manager.find(0, 10, "g");
         assertEquals(2, page1.getTotalElements());
+        Page<Group> page11 = manager.find(0, 1, "g");
+        assertEquals(2, page11.getTotalElements());
+        assertEquals(1, page11.getContent().size());
+        Page<Group> page12 = manager.find(1, 1, "g");
+        assertEquals(2, page12.getTotalElements());
+        assertEquals(1, page12.getContent().size());
         
-        Page<Group> page2 = manager.find(1, 10, "a");
+        Page<Group> page2 = manager.find(0, 10, "a");
         assertEquals(0, page2.getTotalElements());
     }
     
     //============ Assert test =============//
     @Test
-    public void constructor_NullGroup_ShouldThrowException() {
+    public void constructor_NullJdbcOperations_ShouldThrowException() {
         assertThatIllegalArgumentException().isThrownBy(() -> new DefaultGroupManager(null))
             .withMessage("JdbcOperations is required.");
     }
