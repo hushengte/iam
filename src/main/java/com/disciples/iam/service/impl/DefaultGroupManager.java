@@ -19,6 +19,7 @@ import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 
@@ -29,6 +30,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 
 	private static final String COUNT = "select count(id) from iam_group";
 	private static final String FIND = "select id, name, roles, create_time from iam_group";
+	private static final String FIND_BY_ID = "select id, name, roles, create_time from iam_group where id = ?";
 	private static final String FIND_ID_NAMES = "select `id` as `key`, `name` as `value` from iam_group";
 	private static final String INSERT = "insert into iam_group (name, roles, create_time) values (?,?,?)";
 	private static final String UPDATE = "update iam_group set name = ?, roles = ? where id = ?";
@@ -55,6 +57,15 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 		group.setRoles(rs.getString(3));
 		group.setCreateTime(rs.getTimestamp(4));
 		return group;
+	}
+	
+	@Override
+	public Group findById(Integer groupId) {
+	    List<Group> groups = jdbcOperations.query(FIND_BY_ID, this, groupId);
+	    if (!CollectionUtils.isEmpty(groups)) {
+	        return groups.get(0);
+	    }
+	    return null;
 	}
 	
 	@Override
@@ -139,7 +150,10 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 		int size = nonNullList.size();
 		if (size > 0) {
 			String sql = String.format(DELETE_USER_GROUPS, StringUtils.collectionToCommaDelimitedString(Collections.nCopies(size, "?")));
-			jdbcOperations.update(sql, nonNullList.toArray());
+			List<Object> args = new ArrayList<>();
+			args.add(groupId);
+			args.addAll(nonNullList);
+			jdbcOperations.update(sql, args.toArray());
 		}
 	}
 

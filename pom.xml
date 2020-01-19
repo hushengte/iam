@@ -34,6 +34,7 @@
         <servlet-api.version>3.1.0</servlet-api.version>
   		<jackson.version>2.10.1</jackson.version>
         <hibernate-jpa-api.version>1.0.0.Final</hibernate-jpa-api.version>
+        <h2.version>1.4.192</h2.version>
   	</properties>
 	
 	<dependencies>
@@ -140,6 +141,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
             <scope>test</scope>
         </dependency>
 		
