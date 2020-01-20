@@ -50,8 +50,9 @@ public class IamWebSecurityTests {
     @Test
     public void testLogin() throws Exception {
         mockMvc.perform(formPost("/login.do", "username=test&password=test"))
+            .andExpect(MockMvcResultMatchers.request().attribute("error", true))
             .andExpect(MockMvcResultMatchers.request().attribute("username", "test"))
-            .andExpect(MockMvcResultMatchers.forwardedUrl("/login.html?error=true"));
+            .andExpect(MockMvcResultMatchers.forwardedUrl("/login.html"));
     }
     
     @Test
