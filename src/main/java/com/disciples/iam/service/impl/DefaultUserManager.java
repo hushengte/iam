@@ -4,16 +4,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,12 +23,7 @@ import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
@@ -37,15 +32,15 @@ import org.springframework.util.StringUtils;
 import com.disciples.iam.domain.User;
 import com.disciples.iam.service.UserManager;
 
-public class DefaultUserManager implements UserManager, UserDetailsService, RowMapper<User> {
+public class DefaultUserManager implements UserManager, RowMapper<User> {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultUserManager.class);
 	
 	private static final String COMMON_COLUMNS = "u.id, u.username, u.roles, u.name, u.email, u.phone, u.create_time, u.enabled";
 	private static final String SELECT_BY_ID = "select " + COMMON_COLUMNS + ", u.password from iam_user u where u.id = ?";
 	private static final String SELECT_BY_USERNAME = "select " + COMMON_COLUMNS + ", u.password from iam_user u where u.username = ?";
-	private static final String FIND_ALL_ROLES_BY_USERNAME = "select g.roles from iam_user u, iam_user_group m, iam_group g"
-			+ " where u.id = m.user_id and m.group_id = g.id and u.username = ?";
+	private static final String FIND_ALL_ROLES_BY_ID = "select g.roles from iam_user u, iam_user_group m, iam_group g"
+			+ " where u.id = m.user_id and m.group_id = g.id and u.id = ?";
 	private static final String FIND_BY_GROUP = "select %s from iam_user u left join iam_user_group m on u.id = m.user_id where m.group_id = ?";
 	private static final String FIND_BY = "select %s from iam_user u where 1=1";
 	private static final String EXIST = "select id from iam_user where username = ?";
@@ -56,22 +51,64 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	private static final String DELETE_BY_ID_IN = "delete from iam_user where id in (%s)";
 	private static final String DELETE_USER_GROUPS_BY_USER_ID = "delete from iam_user_group where user_id = ?";
 	private static final String DELETE_USER_GROUPS_BY_USER_ID_IN = "delete from iam_user_group where user_id in (%s)";
-	
 	private static final String COUNT_GROUP_BY_ID = "select count(id) from iam_group where id = ?";
 	
-	private static final String PREFIX_ROLE = "ROLE_";
-	private static final String ROLE_USER = "ROLE_USER";
-	private static final String DEFAULT_RAW_PASSWORD = "123456";
-    private static final Md5PasswordEncoder MD5_ENCODER = new Md5PasswordEncoder();
+	public static final String ID_NOT_NULL = "用户标识不能为空";
+	
+	public static final String DEFAULT_RAW_PASSWORD = "123456";
     
 	private JdbcOperations jdbcOperations;
+	private PasswordEncoder passwordEncoder;
+	private String defaultPassword;
 	
 	public DefaultUserManager(JdbcOperations jdbcOperations) {
-		Assert.notNull(jdbcOperations, "JdbcOperations is required.");
-		this.jdbcOperations = jdbcOperations;
+		this(jdbcOperations, new Md5PasswordEncoder(), DEFAULT_RAW_PASSWORD);
 	}
+	
+	public DefaultUserManager(JdbcOperations jdbcOperations, PasswordEncoder passwordEncoder) {
+        this(jdbcOperations, passwordEncoder, DEFAULT_RAW_PASSWORD);
+    }
+	
+	public DefaultUserManager(JdbcOperations jdbcOperations, PasswordEncoder passwordEncoder, 
+	        String defaultPassword) {
+        Assert.notNull(jdbcOperations, "JdbcOperations is required.");
+        this.jdbcOperations = jdbcOperations;
+        setPasswordEncoder(passwordEncoder);
+        setDefaultPassword(defaultPassword);
+    }
+	
+	private static class Md5PasswordEncoder implements PasswordEncoder {
 
-	@Override
+	    @Override
+	    public String encode(CharSequence rawPassword) {
+	        return DigestUtils.md5Hex((String)rawPassword);
+	    }
+
+	    @Override
+	    public boolean matches(CharSequence rawPassword, String encodedPassword) {
+	        return encode(rawPassword).equals(encodedPassword);
+	    }
+	}
+	
+	public PasswordEncoder getPasswordEncoder() {
+        return passwordEncoder;
+    }
+
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        Assert.notNull(passwordEncoder, "PasswordEncoder is required.");
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public String getDefaultPassword() {
+        return defaultPassword;
+    }
+
+    public void setDefaultPassword(String defaultPassword) {
+        Assert.hasText(defaultPassword, "Default Password must not be empty.");
+        this.defaultPassword = defaultPassword;
+    }
+
+    @Override
 	public User mapRow(ResultSet rs, int rowNum) throws SQLException {
 		User user = new User(rs.getInt(1));
 		user.setUsername(rs.getString(2));
@@ -106,38 +143,6 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	}
 	
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = findOneByUsername(username);
-		if (user == null) {
-            throw new UsernameNotFoundException(String.format("用户 '%s' 不存在", username));
-        }
-		List<String> groupRoles = jdbcOperations.queryForList(FIND_ALL_ROLES_BY_USERNAME, String.class, username);
-        Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
-        authorities.add(new SimpleGrantedAuthority(ROLE_USER));
-        for (String groupRole : groupRoles) {
-        	authorities.addAll(getAuthorities(groupRole));
-        }
-        authorities.addAll(getAuthorities(user.getRoles()));
-        user.setAuthorities(Collections.unmodifiableSet(authorities));
-        return user;
-	}
-
-	private List<? extends GrantedAuthority> getAuthorities(String roles) {
-    	String[] roleArray = StringUtils.commaDelimitedListToStringArray(roles);
-    	if (roleArray.length > 0) {
-    		List<SimpleGrantedAuthority> authorties = new ArrayList<SimpleGrantedAuthority>();
-        	for (String role : roleArray) {
-        		authorties.add(new SimpleGrantedAuthority(role));
-        		if (!role.startsWith(PREFIX_ROLE)) {
-        			authorties.add(new SimpleGrantedAuthority(PREFIX_ROLE + role));
-        		}
-        	}
-        	return authorties;
-    	}
-    	return Collections.emptyList();
-    }
-	
-	@Override
 	public Page<User> find(int page, int size, Integer groupId, String keyword) {
 		Pageable pageable = new PageRequest(page, size);
 		List<Object> args = new ArrayList<Object>();
@@ -167,7 +172,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	
 	@Override
 	public List<User> find(Integer groupId) {
-		Assert.notNull(groupId, "用户组标识不能为空");
+		Assert.notNull(groupId, DefaultGroupManager.ID_NOT_NULL);
 		return jdbcOperations.query(String.format(FIND_BY_GROUP, COMMON_COLUMNS), this, groupId);
 	}
 	
@@ -185,10 +190,10 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 			if (exists(user.getUsername())) {
 	        	throw new DuplicateKeyException(String.format("用户名'%s'已被使用", user.getUsername()));
 	        }
-	        String password = StringUtils.hasText(user.getPassword()) ?  user.getPassword(): DEFAULT_RAW_PASSWORD;
+	        String password = StringUtils.hasText(user.getPassword()) ?  user.getPassword(): defaultPassword;
 	        user.setCreateTime(new Date());
 	        
-	        Object[] params = new Object[] {user.getUsername(), MD5_ENCODER.encodePassword(password, null), user.getName(), 
+	        Object[] params = new Object[] {user.getUsername(), passwordEncoder.encode(password), user.getName(), 
 	        		user.getEmail(), user.getPhone(), user.getRoles(), user.getCreateTime()};
 	        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 	        
@@ -210,69 +215,39 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 //	@Transactional
 	public List<User> batchInsert(List<User> users, Integer groupId) {
 		Assert.notEmpty(users, "用户数据列表不能为空");
-		Set<String> usernames = new HashSet<String>();
-		for (User user : users) {
-			usernames.add(user.getUsername());
+		// check group exists
+		if (groupId != null) {
+		    if (jdbcOperations.queryForObject(COUNT_GROUP_BY_ID, Long.class, groupId) == 0) {
+		        throw new DataIntegrityViolationException("用户组不存在，id=" + groupId);
+		    }
 		}
-		String placeholders = StringUtils.collectionToCommaDelimitedString(Collections.nCopies(usernames.size(), "?"));
-		String findExistUsernamesSql = String.format("select username from iam_user where username in (%s)", placeholders);
-		List<String> existUsernames = jdbcOperations.queryForList(findExistUsernamesSql, String.class, usernames.toArray());
-		Set<String> existUsernameSet = new HashSet<String>(existUsernames);
-		
-		List<String> insertPlaceholders = new ArrayList<String>();
-		List<Object> args = new ArrayList<Object>();
+		// save new user only
 		List<User> savedUsers = new ArrayList<User>();
 		for (User user : users) {
-			if (!existUsernameSet.contains(user.getUsername())) {
-				insertPlaceholders.add("(?,?,?,?,?)");
-				args.add(user.getUsername());
-				args.add(MD5_ENCODER.encodePassword(StringUtils.hasText(user.getPassword()) ?  user.getPassword(): DEFAULT_RAW_PASSWORD, null));
-				args.add(user.getName());
-				args.add(user.getEmail());
-				args.add(user.getPhone());
-				savedUsers.add(user);
-			}
+		    try {
+                savedUsers.add(save(user));
+            } catch (DuplicateKeyException e) {
+                LOG.warn(e.getMessage(), e);
+            }
 		}
-		if (insertPlaceholders.size() == 0) {
-			return Collections.emptyList();
-		}
-		StringBuilder insertSql = new StringBuilder("insert into iam_user (username, password, name, email, phone) values ");
-		insertSql.append(StringUtils.collectionToCommaDelimitedString(insertPlaceholders));
-		int[] sqlTypes = new int[args.size()];
-		Arrays.fill(sqlTypes, Types.VARCHAR);
-		
-		PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(insertSql.toString(), sqlTypes);
-		factory.setGeneratedKeysColumnNames("id");
-		GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-		jdbcOperations.update(factory.newPreparedStatementCreator(args.toArray()), keyHolder);
-		
-		List<Map<String, Object>> keyList = keyHolder.getKeyList();
-		if (keyList.size() == savedUsers.size()) {
-			for (int i = 0; i < keyList.size(); i++) {
-				Object genKey = keyList.get(i).get("GENERATED_KEY");
-				Integer id = genKey instanceof Integer ? (Integer)genKey : Integer.parseInt(genKey.toString());
-				savedUsers.get(i).setId(id);
-			}
-			if (groupId != null && jdbcOperations.queryForObject(COUNT_GROUP_BY_ID, Long.class, groupId) > 0) {
-				args = new ArrayList<Object>();
-				for (User user : savedUsers) {
-					args.add(user.getId());
-					args.add(groupId);
-				}
-				insertSql = new StringBuilder("insert into iam_user_group (user_id, group_id) values ");
-				insertSql.append(StringUtils.collectionToCommaDelimitedString(Collections.nCopies(savedUsers.size(), "(?,?)")));
-				jdbcOperations.update(insertSql.toString(), args.toArray());
-			}
-		} else {
-			LOG.warn("Batch insert user illegal state: keyList.size() != savedUsers.size()");
-		}
+		if (savedUsers.size() > 0 && groupId != null) {
+		    List<Object> args = new ArrayList<>();
+            for (User user : savedUsers) {
+                args.add(user.getId());
+                args.add(groupId);
+            }
+            StringBuilder insertSql = new StringBuilder("insert into iam_user_group (user_id, group_id) values ");
+            List<String> placeholders = Collections.nCopies(savedUsers.size(), "(?,?)");
+            insertSql.append(StringUtils.collectionToCommaDelimitedString(placeholders));
+            jdbcOperations.update(insertSql.toString(), args.toArray());
+        }
 		return savedUsers;
 	}
 	
 	@Override
 //	@Transactional TODO:
 	public void delete(Integer userId) {
-	    Assert.notNull(userId, "用户标识不能为空");
+	    Assert.notNull(userId, ID_NOT_NULL);
 		jdbcOperations.update(DELETE_USER_GROUPS_BY_USER_ID, userId);
 		jdbcOperations.update(DELETE_BY_ID, userId);
 	}
@@ -289,22 +264,28 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	
 	@Override
 	public void changePassword(Integer userId, String oldPassword, String newPassword) throws IllegalArgumentException {
-	    Assert.notNull(userId, "用户标识不能为空");
+	    Assert.notNull(userId, ID_NOT_NULL);
 	    Assert.isTrue(StringUtils.hasText(oldPassword) && StringUtils.hasText(newPassword), "密码不能为空");
 	    
 		User currentUser = findOne(userId);
 		if (currentUser == null) {
 			throw new IllegalArgumentException("不存在用户：id=" + userId);
 		}
-		if (!currentUser.getPassword().equals(MD5_ENCODER.encodePassword(oldPassword, null))) {
+		if (!currentUser.getPassword().equals(passwordEncoder.encode(oldPassword))) {
             throw new IllegalArgumentException("旧密码错误.");
         }
-		jdbcOperations.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(newPassword, null), currentUser.getId());
+		jdbcOperations.update(CHANGE_PASSWORD, passwordEncoder.encode(newPassword), currentUser.getId());
 	}
 
 	@Override
 	public List<Integer> groupIds(Integer userId) {
 		return jdbcOperations.queryForList("select m.group_id from iam_user u, iam_user_group m where u.id = m.user_id and u.id = ?",  Integer.class, userId);
+	}
+	
+	@Override
+	public List<String> getGroupRoles(Integer userId) {
+	    Assert.notNull(userId, ID_NOT_NULL);
+	    return jdbcOperations.queryForList(FIND_ALL_ROLES_BY_ID, String.class, userId);
 	}
 	
 	private int batchInsertMembership(Integer userId, List<Integer> groupIds) {
@@ -362,7 +343,7 @@ public class DefaultUserManager implements UserManager, UserDetailsService, RowM
 	
 	@Override
 	public void resetPassword(Integer userId) {
-		jdbcOperations.update(CHANGE_PASSWORD, MD5_ENCODER.encodePassword(DEFAULT_RAW_PASSWORD, null), userId);
+		jdbcOperations.update(CHANGE_PASSWORD, passwordEncoder.encode(defaultPassword), userId);
 	}
 	
 	@Override

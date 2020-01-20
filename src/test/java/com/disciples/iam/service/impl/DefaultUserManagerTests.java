@@ -1,5 +1,6 @@
 package com.disciples.iam.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -14,6 +15,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,6 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
@@ -30,10 +33,9 @@ import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 
 import com.disciples.iam.domain.Group;
 import com.disciples.iam.domain.User;
+import com.disciples.iam.service.GroupManager;
 
 public class DefaultUserManagerTests {
-    
-    static final String USER_ID_NOT_NULL = "用户标识不能为空";
     
     private EmbeddedDatabase dataSource;
     private DefaultUserManager manager;
@@ -110,43 +112,70 @@ public class DefaultUserManagerTests {
         }
     }
     
-    @Test
-    public void testBatchInsert() {
+    static List<User> users() {
         List<User> users = new ArrayList<User>();
         users.add(new User("ddd", null, "ddd-name", "ddd@gmail.com", null));
         users.add(new User("eeeddd", null, "eeedddname", "eee@gmail.com", null));
         users.add(new User("fffddd", null, "eeefffname", "fff@gmail.com", null));
+        return users;
+    }
+    
+    @Test
+    public void batchInsert_nullGroupId() {
+        List<User> saved = manager.batchInsert(users(), null);
+        assertEquals(3, saved.size());
+    }
+    
+    GroupManager groupManager() {
+        return new DefaultGroupManager(new JdbcTemplate(dataSource));
+    }
+    
+    @Test
+    public void batchInsert_withGroupId() {
+        Integer notExistGroupId = 1;
+        assertThatExceptionOfType(DataIntegrityViolationException.class)
+            .isThrownBy(() -> manager.batchInsert(users(), notExistGroupId))
+            .withMessage("用户组不存在，id=" + notExistGroupId);
         
-        DefaultGroupManager groupManager = new DefaultGroupManager(new JdbcTemplate(dataSource));
-        Integer groupId = groupManager.save(new Group(null, "g1", null)).getId();
-        //FIXME: failed
-        List<User> saved = manager.batchInsert(users, groupId);
+        Integer existGroupId = groupManager().save(new Group(null, "g1", null)).getId();
+        List<User> saved = manager.batchInsert(users(), existGroupId);
         assertEquals(3, saved.size());
         
-        Page<User> userPage = manager.find(0, 10, groupId, "ddd");
+        Page<User> userPage = manager.find(0, 10, existGroupId, "ddd");
         assertEquals(3, userPage.getTotalElements());
     }
     
     @Test
-    public void testChangePassword() {
-        User user = manager.save(new User("test", null, "testname", "test@gmail.com", "18767122509"));
+    public void getGroupRoles() {
+        User user = new User("aaa", null, "aname", null, null);
+        user.setRoles("A,B,C");
+        Group savedGroup = groupManager().save(new Group(null, "g1", "GA,GB,GC"));
+        User saved = manager.batchInsert(Arrays.asList(user), savedGroup.getId()).get(0);
+        List<String> groupRoles = manager.getGroupRoles(saved.getId());
+        assertEquals(1, groupRoles.size());
+        assertEquals(savedGroup.getRoles(), groupRoles.get(0));
+    }
+    
+    @Test
+    public void change_resetPassword() {
         String newRawPassword = "1234567";
-        manager.changePassword(user.getId(), "123456", newRawPassword);
-        String newEncodedPassword = new Md5PasswordEncoder().encodePassword(newRawPassword, null);
+        Md5PasswordEncoder encoder = new Md5PasswordEncoder();
+        String newEncodedPassword = encoder.encodePassword(newRawPassword, null);
+        
+        User user = manager.save(new User("test", null, "testname", "test@gmail.com", null));
+        manager.changePassword(user.getId(), manager.getDefaultPassword(), newRawPassword);
         assertEquals(newEncodedPassword, manager.findOne(user.getId()).getPassword());
+        
+        String defaultEncodedPassword = encoder.encodePassword(manager.getDefaultPassword(), null);
+        manager.resetPassword(user.getId());
+        assertEquals(defaultEncodedPassword, manager.findOne(user.getId()).getPassword());
     }
     
     //============ Assert test =============//
     @Test
-    public void constructor_NullJdbcOperations_ShouldThrowException() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultUserManager(null))
-            .withMessage("JdbcOperations is required.");
-    }
-    
-    @Test
     public void find_NullGroupId_ShouldThrowException() {
         assertThatIllegalArgumentException().isThrownBy(() -> manager.find((Integer)null))
-            .withMessage(DefaultGroupManagerTests.GROUP_ID_NOT_NULL);
+            .withMessage(DefaultGroupManager.ID_NOT_NULL);
     }
     
     @Test
@@ -165,9 +194,15 @@ public class DefaultUserManagerTests {
     }
     
     @Test
+    public void getGroupRoles_NullUserId_ShouldThrowException() {
+        assertThatIllegalArgumentException().isThrownBy(() -> manager.getGroupRoles(null))
+            .withMessage(DefaultUserManager.ID_NOT_NULL);
+    }
+    
+    @Test
     public void delete_NullUserId_ShouldThrowException() {
         assertThatIllegalArgumentException().isThrownBy(() -> manager.delete((Integer)null))
-            .withMessage(USER_ID_NOT_NULL);
+            .withMessage(DefaultUserManager.ID_NOT_NULL);
     }
     
 }

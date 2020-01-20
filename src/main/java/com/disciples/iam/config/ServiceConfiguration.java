@@ -15,12 +15,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import com.disciples.iam.service.GroupManager;
 import com.disciples.iam.service.UserManager;
 import com.disciples.iam.service.impl.DefaultGroupManager;
+import com.disciples.iam.service.impl.DefaultUserDetailsService;
 import com.disciples.iam.service.impl.DefaultUserManager;
 
 @Configuration
 public class ServiceConfiguration {
-
-	private DefaultUserManager userManager;
 	
 	@Autowired
 	private DataSource dataSource;
@@ -42,21 +41,14 @@ public class ServiceConfiguration {
         return new JdbcTemplate(dataSource);
     }
 	
-	private DefaultUserManager getDefaultUserManager() {
-		if (userManager == null) {
-			userManager = new DefaultUserManager(jdbcTemplate());
-		}
-		return userManager;
-	}
-	
 	@Bean
 	public UserManager userManager() {
-		return getDefaultUserManager();
+		return new DefaultUserManager(jdbcTemplate());
 	}
 	
 	@Bean
 	public UserDetailsService userDetailsService() {
-		return getDefaultUserManager();
+		return new DefaultUserDetailsService(userManager());
 	}
 	
 	@Bean

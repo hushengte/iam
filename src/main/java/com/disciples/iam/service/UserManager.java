@@ -84,6 +84,13 @@ public interface UserManager {
 	List<Integer> groupIds(Integer userId);
 	
 	/**
+	 * 获取指定用户的用户组权限列表
+	 * @param userId 用户ID
+	 * @return 用户组权限列表
+	 */
+	List<String> getGroupRoles(Integer userId);
+	
+	/**
 	 * 更新指定用户的用户组
 	 * @param userId 用户ID
 	 * @param groupIds 用户组ID列表

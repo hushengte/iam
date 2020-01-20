@@ -38,7 +38,6 @@ import com.disciples.iam.domain.User;
 
 public class DefaultGroupManagerTests {
     
-    static final String GROUP_ID_NOT_NULL = "用户组标识不能为空";
     static final String USER_IDS_NOT_EMPTY = "用户标识列表不能为空";
     
     static final String COUNT_USERS = "select count(user_id) from iam_user_group where group_id = ?";
@@ -207,17 +206,17 @@ public class DefaultGroupManagerTests {
     @Test
     public void delete_NullGroupId_ShouldThrowException() {
         assertThatIllegalArgumentException().isThrownBy(() -> manager.delete(null))
-            .withMessage(GROUP_ID_NOT_NULL);
+            .withMessage(DefaultGroupManager.ID_NOT_NULL);
     }
     
     @Test
     public void removeUser_NullGroupIdOrEmptyUserIds_ShouldThrowException() {
         assertThatIllegalArgumentException().isThrownBy(() -> manager.removeUser(null, null))
-            .withMessage(GROUP_ID_NOT_NULL);
+            .withMessage(DefaultGroupManager.ID_NOT_NULL);
         assertThatIllegalArgumentException().isThrownBy(() -> manager.removeUser(null, Collections.emptyList()))
-            .withMessage(GROUP_ID_NOT_NULL);
+            .withMessage(DefaultGroupManager.ID_NOT_NULL);
         assertThatIllegalArgumentException().isThrownBy(() -> manager.removeUser(null, Arrays.asList(1)))
-            .withMessage(GROUP_ID_NOT_NULL);
+            .withMessage(DefaultGroupManager.ID_NOT_NULL);
         
         assertThatIllegalArgumentException().isThrownBy(() -> manager.removeUser(1, null))
             .withMessage(USER_IDS_NOT_EMPTY);

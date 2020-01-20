@@ -43,6 +43,8 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	private static final String FIND_BY_USERNAME = "select g.id, g.name, g.roles, g.create_time from iam_group g"
 			+ " left join iam_user_group ug on g.id = ug.group_id left join iam_user u on ug.user_id = u.id where u.username = ?";
 	
+	public static final String ID_NOT_NULL = "用户组标识不能为空";
+	
 	private JdbcOperations jdbcOperations;
 	
 	public DefaultGroupManager(JdbcOperations jdbcOperations) {
@@ -130,7 +132,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 
 	@Override
 	public void delete(Integer groupId) {
-		Assert.notNull(groupId, "用户组标识不能为空");
+		Assert.notNull(groupId, ID_NOT_NULL);
 		if (jdbcOperations.queryForObject(COUNT_USERS, Long.class, groupId) > 0) {
 			throw new DataIntegrityViolationException("用户组存在用户，请删除用户后再操作");
 		}
@@ -139,7 +141,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 
 	@Override
 	public void removeUser(Integer groupId, List<Integer> userIds) {
-		Assert.notNull(groupId, "用户组标识不能为空");
+		Assert.notNull(groupId, ID_NOT_NULL);
 		Assert.notEmpty(userIds, "用户标识列表不能为空");
 		List<Integer> nonNullList = new ArrayList<Integer>();
 		for (Integer userId : userIds) {
