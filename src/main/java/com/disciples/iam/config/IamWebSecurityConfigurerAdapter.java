@@ -16,10 +16,9 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.ForwardAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.util.WebUtils;
 
 /**
  * After IgnoredPathsWebSecurityConfigurerAdapter
@@ -27,6 +26,9 @@ import org.springframework.web.util.WebUtils;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+    
+    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_USER = "USER";
 
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -41,22 +43,22 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		web.ignoring().antMatchers("/css/**");
 	}
 
+	// @formatter: off
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// @formatter: off
 		http
 			.requestMatchers()
 				.antMatchers("/admin/**", "/user/**", "/login.do", "/logout.do")
 				.and()
 			.authorizeRequests()
-				.antMatchers("/admin/**").access("hasRole('ADMIN')")
-				.antMatchers("/user/**").access("hasRole('ROLE_USER')")
+				.antMatchers("/admin/**").hasAuthority(ROLE_ADMIN)
+				.antMatchers("/user/**").hasAuthority(ROLE_USER)
 				.and()
 			.csrf().disable()
 			.formLogin()
 				.loginPage("/login.html")
 				.loginProcessingUrl("/login.do").defaultSuccessUrl("/")
-				.failureHandler(new UsernameAwareAuthenticationFailureHandler("/login.html?error=true"))
+				.failureHandler(new UsernameAwareFailureHandler("/login.html?error=true"))
 				.permitAll()
 				.and()
 			.logout()
@@ -64,25 +66,25 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 				.and()
 			.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login.html"))
 			;
-		// @formatter: on
 	}
+	// @formatter: on
 	
-	private static class UsernameAwareAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-		
-		public UsernameAwareAuthenticationFailureHandler(String defaultFailureUrl) {
-			super(defaultFailureUrl);
-		}
+	private static class UsernameAwareFailureHandler extends ForwardAuthenticationFailureHandler {
+        
+        public UsernameAwareFailureHandler(String defaultFailureUrl) {
+            super(defaultFailureUrl);
+        }
 
-		@Override
-		public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-		        AuthenticationException exception) throws IOException, ServletException {
-			
-			String name = UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
-			WebUtils.setSessionAttribute(request, name, request.getParameter(name));
-			
-			super.onAuthenticationFailure(request, response, exception);
-		}
-		
-	}
-	
+        @Override
+        public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+                AuthenticationException exception) throws IOException, ServletException {
+            
+            String usernameKey = UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
+            request.setAttribute(usernameKey, request.getParameter(usernameKey));
+            
+            super.onAuthenticationFailure(request, response, exception);
+        }
+        
+    }
+
 }

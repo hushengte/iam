@@ -11,13 +11,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.disciples.iam.config.WebConfig;
-
 @Configuration
 @EnableWebMvc
 @Import(WebConfig.class)
 public class MvcConfig extends WebMvcConfigurerAdapter {
-	
+    
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		Jackson2ObjectMapperFactoryBean factory = new Jackson2ObjectMapperFactoryBean();

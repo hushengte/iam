@@ -35,6 +35,10 @@ public abstract class AbstractMvcTests {
 		mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 	}
 	
+	protected MockHttpServletRequestBuilder formPost(String url, String payload) throws IOException {
+        return post(url).contentType(MediaType.APPLICATION_FORM_URLENCODED).content(payload);
+    }
+	
 	protected MockHttpServletRequestBuilder jsonPost(String url, String payload) throws IOException {
 		return post(url).contentType(MediaType.APPLICATION_JSON_UTF8).content(payload);
 	}
