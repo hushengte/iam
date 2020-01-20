@@ -29,6 +29,10 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
     
     public static final String ROLE_ADMIN = "ADMIN";
     public static final String ROLE_USER = "USER";
+    
+    protected static final String URL_LOGIN = "/login.do";
+    protected static final String URL_LOGOUT = "/logout.do";
+    protected static final String URL_LOGIN_PAGE = "/login.html";
 
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -48,7 +52,7 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 	protected void configure(HttpSecurity http) throws Exception {
 		http
 			.requestMatchers()
-				.antMatchers("/admin/**", "/user/**", "/login.do", "/logout.do")
+				.antMatchers("/admin/**", "/user/**", URL_LOGIN, URL_LOGOUT)
 				.and()
 			.authorizeRequests()
 				.antMatchers("/admin/**").hasAuthority(ROLE_ADMIN)
@@ -56,15 +60,15 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 				.and()
 			.csrf().disable()
 			.formLogin()
-				.loginPage("/login.html")
-				.loginProcessingUrl("/login.do").defaultSuccessUrl("/")
-				.failureHandler(new UsernameAwareFailureHandler("/login.html?error=true"))
+				.loginPage(URL_LOGIN_PAGE)
+				.loginProcessingUrl(URL_LOGIN).defaultSuccessUrl("/")
+				.failureHandler(new UsernameAwareFailureHandler(URL_LOGIN_PAGE))
 				.permitAll()
 				.and()
 			.logout()
-				.logoutUrl("/logout.do").logoutSuccessUrl("/")
+				.logoutUrl(URL_LOGOUT).logoutSuccessUrl("/")
 				.and()
-			.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login.html"))
+			.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(URL_LOGIN_PAGE))
 			;
 	}
 	// @formatter: on
@@ -81,6 +85,7 @@ public class IamWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
             
             String usernameKey = UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
             request.setAttribute(usernameKey, request.getParameter(usernameKey));
+            request.setAttribute("error", true);
             
             super.onAuthenticationFailure(request, response, exception);
         }
