@@ -19,9 +19,6 @@ import com.disciples.iam.service.UserManager;
 
 public class DefaultUserDetailsService implements UserDetailsService {
     
-    private static final String PREFIX_ROLE = "ROLE_";
-    private static final String ROLE_USER = "ROLE_USER";
-    
     private UserManager userManager;
     
     public DefaultUserDetailsService(UserManager userManager) {
@@ -41,20 +38,16 @@ public class DefaultUserDetailsService implements UserDetailsService {
             authorities.addAll(getAuthorities(groupRole));
         }
         authorities.addAll(getAuthorities(user.getRoles()));
-        authorities.add(new SimpleGrantedAuthority(ROLE_USER));
         user.setAuthorities(Collections.unmodifiableSet(authorities));
         return user;
     }
     
-    private List<? extends GrantedAuthority> getAuthorities(String roles) {
+    private static List<? extends GrantedAuthority> getAuthorities(String roles) {
         String[] roleArray = StringUtils.commaDelimitedListToStringArray(roles);
         if (roleArray.length > 0) {
             List<SimpleGrantedAuthority> authorties = new ArrayList<SimpleGrantedAuthority>();
             for (String role : roleArray) {
                 authorties.add(new SimpleGrantedAuthority(role));
-                if (!role.startsWith(PREFIX_ROLE)) {
-                    authorties.add(new SimpleGrantedAuthority(PREFIX_ROLE + role));
-                }
             }
             return authorties;
         }
