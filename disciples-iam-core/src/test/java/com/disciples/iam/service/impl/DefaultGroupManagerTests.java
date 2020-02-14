@@ -40,8 +40,6 @@ public class DefaultGroupManagerTests {
     
     static final String USER_IDS_NOT_EMPTY = "用户标识列表不能为空";
     
-    static final String COUNT_USERS = "select count(user_id) from iam_user_group where group_id = ?";
-    
     private EmbeddedDatabase dataSource;
     private DefaultUserManager userManager;
     private DefaultGroupManager manager;

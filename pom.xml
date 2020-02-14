@@ -28,7 +28,6 @@
 	</modules>
     
     <properties>
-        <iam.version>1.0.0</iam.version>
         <servlet-api.version>3.1.0</servlet-api.version>
         <spring.version>4.3.3.RELEASE</spring.version>
         <spring-security.version>4.1.3.RELEASE</spring-security.version>
@@ -36,17 +35,6 @@
     
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.github.hushengte</groupId>
-                <artifactId>disciples-iam-core</artifactId>
-                <version>${iam.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.hushengte</groupId>
-                <artifactId>disciples-iam-oauth2</artifactId>
-                <version>${iam.version}</version>
-            </dependency>
-            
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>

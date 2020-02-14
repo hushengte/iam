@@ -15,7 +15,7 @@
 	<description>IAM core</description>
 	
 	<properties>
-  		<spring-data-commons.version>1.13.22.RELEASE</spring-data-commons.version>
+  		<spring-data-commons.version>1.12.2.RELEASE</spring-data-commons.version>
         <commons-codec.version>1.11</commons-codec.version>
         
         <hibernate-jpa-api.version>1.0.0.Final</hibernate-jpa-api.version>
