@@ -29,11 +29,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 
 import com.disciples.iam.domain.Group;
 import com.disciples.iam.domain.User;
 import com.disciples.iam.service.GroupManager;
+import com.disciples.iam.util.Md5PasswordEncoder;
 
 public class DefaultUserManagerTests {
     
@@ -160,13 +160,13 @@ public class DefaultUserManagerTests {
     public void change_resetPassword() {
         String newRawPassword = "1234567";
         Md5PasswordEncoder encoder = new Md5PasswordEncoder();
-        String newEncodedPassword = encoder.encodePassword(newRawPassword, null);
+        String newEncodedPassword = encoder.encode(newRawPassword);
         
         User user = manager.save(new User("test", null, "testname", "test@gmail.com", null));
         manager.changePassword(user.getId(), manager.getDefaultPassword(), newRawPassword);
         assertEquals(newEncodedPassword, manager.findOne(user.getId()).getPassword());
         
-        String defaultEncodedPassword = encoder.encodePassword(manager.getDefaultPassword(), null);
+        String defaultEncodedPassword = encoder.encode(manager.getDefaultPassword());
         manager.resetPassword(user.getId());
         assertEquals(defaultEncodedPassword, manager.findOne(user.getId()).getPassword());
     }
