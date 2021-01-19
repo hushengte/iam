@@ -44,7 +44,7 @@ public class DefaultUserDetailsServiceTests {
         given(userManager.findOneByUsername(username)).willReturn(null);
         assertThatExceptionOfType(UsernameNotFoundException.class)
             .isThrownBy(() -> service.loadUserByUsername(username))
-            .withMessage("用户不存在,username=" + username);
+            .withMessage("User does not exist, username=" + username);
         verify(userManager).findOneByUsername(username);
         verifyNoMoreInteractions(userManager);
     }

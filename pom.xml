@@ -5,11 +5,10 @@
     <parent>
         <groupId>com.github.hushengte</groupId>
         <artifactId>disciples-parent</artifactId>
-        <version>1.0.2</version>
+        <version>2.0.0</version>
     </parent>
     
 	<artifactId>disciples-iam-parent</artifactId>
-	<version>1.0.1</version>
 	<packaging>pom</packaging>
 
 	<name>disciples-iam-parent</name>
@@ -28,9 +27,9 @@
 	</modules>
     
     <properties>
-        <servlet-api.version>3.1.0</servlet-api.version>
-        <spring.version>4.3.25.RELEASE</spring.version>
-        <spring-security.version>4.2.13.RELEASE</spring-security.version>
+        <spring.version>5.2.12.RELEASE</spring.version>
+        <spring-security.version>5.3.6.RELEASE</spring-security.version>
+        <servlet-api.version>4.0.1</servlet-api.version>
     </properties>
     
     <repositories>
@@ -42,22 +41,31 @@
     
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${servlet-api.version}</version>
+        	<dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
             </dependency>
-        
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-expression</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-webmvc</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-webmvc</artifactId>
+	            <version>${spring.version}</version>
+	        </dependency>
             
             <dependency>
                 <groupId>org.springframework.security</groupId>
@@ -69,6 +77,12 @@
                 <artifactId>spring-security-web</artifactId>
                 <version>${spring-security.version}</version>
             </dependency>
+            
+            <dependency>
+	            <groupId>javax.servlet</groupId>
+	            <artifactId>javax.servlet-api</artifactId>
+	            <version>${servlet-api.version}</version>
+	        </dependency>
             
             <dependency>
                 <groupId>org.springframework</groupId>

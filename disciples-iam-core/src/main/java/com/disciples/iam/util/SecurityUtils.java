@@ -8,8 +8,8 @@ import com.disciples.iam.domain.User;
 public abstract class SecurityUtils {
 	
 	/**
-	 * 获取已认证的用户
-	 * @return 当前登录的用户
+	 * Get authentated user
+	 * @return Current authentated user
 	 */
     public static User getPrincipal() {
         return getPrincipal(User.class);
@@ -24,6 +24,11 @@ public abstract class SecurityUtils {
             }
         }
         return null;
+    }
+    
+    public static String getAuthedUsername() {
+        User user = getPrincipal(User.class);
+        return user != null ? user.getUsername() : null;
     }
 
 }

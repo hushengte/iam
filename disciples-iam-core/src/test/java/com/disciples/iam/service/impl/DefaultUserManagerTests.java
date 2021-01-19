@@ -135,7 +135,7 @@ public class DefaultUserManagerTests {
         Integer notExistGroupId = 1;
         assertThatExceptionOfType(DataIntegrityViolationException.class)
             .isThrownBy(() -> manager.batchInsert(users(), notExistGroupId))
-            .withMessage("用户组不存在，id=" + notExistGroupId);
+            .withMessage("Group does not exist, id=" + notExistGroupId);
         
         Integer existGroupId = groupManager().save(new Group(null, "g1", null)).getId();
         List<User> saved = manager.batchInsert(users(), existGroupId);
@@ -181,12 +181,12 @@ public class DefaultUserManagerTests {
     @Test
     public void save_NullUser_ShouldThrowException() {
         assertThatIllegalArgumentException().isThrownBy(() -> manager.save(null))
-            .withMessage("用户数据不能为空");
+            .withMessage("User cannot be null");
     }
     
     @Test
     public void batchInsert_EmptyUserList_ShouldThrowException() {
-        String message = "用户数据列表不能为空";
+        String message = "User list cannot be empty.";
         assertThatIllegalArgumentException().isThrownBy(() -> manager.batchInsert(null, null))
             .withMessage(message);
         assertThatIllegalArgumentException().isThrownBy(() -> manager.batchInsert(Collections.emptyList(), null))

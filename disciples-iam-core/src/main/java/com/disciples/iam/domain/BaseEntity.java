@@ -13,7 +13,7 @@ public abstract class BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 2436149785969523480L;
     
-    public static final String TABLE_GENERATOR_NAME = "ID_INCREMENT_GENERATOR";
+    public static final String TABLE_GENERATOR_NAME = "id_increment_generator";
     
     private Integer id;
 

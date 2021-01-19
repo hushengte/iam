@@ -43,7 +43,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	private static final String FIND_BY_USERNAME = "select g.id, g.name, g.roles, g.create_time from iam_group g"
 			+ " left join iam_user_group ug on g.id = ug.group_id left join iam_user u on ug.user_id = u.id where u.username = ?";
 	
-	public static final String ID_NOT_NULL = "用户组标识不能为空";
+	public static final String ID_NOT_NULL = "Group id cannot be null.";
 	
 	private JdbcOperations jdbcOperations;
 	
@@ -72,7 +72,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	
 	@Override
 	public Page<Group> find(int page, int size, String keyword) {
-		Pageable pageable = new PageRequest(page, size);
+		Pageable pageable = PageRequest.of(page, size);
 		
 		StringBuilder condition = new StringBuilder();
 		List<Object> args = new ArrayList<Object>(4);
@@ -113,7 +113,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	
 	@Override
 	public Group save(Group group) {
-		Assert.notNull(group, "用户组数据不能为空");
+		Assert.notNull(group, "Group cannot be null.");
 		Integer id = group.getId();
 		if (id == null) {
 			group.setCreateTime(new Date());
@@ -134,7 +134,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	public void delete(Integer groupId) {
 		Assert.notNull(groupId, ID_NOT_NULL);
 		if (jdbcOperations.queryForObject(COUNT_USERS, Long.class, groupId) > 0) {
-			throw new DataIntegrityViolationException("用户组存在用户，请删除用户后再操作");
+			throw new DataIntegrityViolationException("There are users in this group, please delete these users first.");
 		}
 		jdbcOperations.update(DELETE, groupId);
 	}
@@ -142,7 +142,7 @@ public class DefaultGroupManager implements GroupManager, RowMapper<Group> {
 	@Override
 	public void removeUser(Integer groupId, List<Integer> userIds) {
 		Assert.notNull(groupId, ID_NOT_NULL);
-		Assert.notEmpty(userIds, "用户标识列表不能为空");
+		Assert.notEmpty(userIds, "User id list cannot be empty.");
 		List<Integer> nonNullList = new ArrayList<Integer>();
 		for (Integer userId : userIds) {
 			if (userId != null) {

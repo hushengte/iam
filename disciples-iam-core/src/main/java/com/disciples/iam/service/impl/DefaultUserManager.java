@@ -53,7 +53,7 @@ public class DefaultUserManager implements UserManager, RowMapper<User> {
 	private static final String DELETE_USER_GROUPS_BY_USER_ID_IN = "delete from iam_user_group where user_id in (%s)";
 	private static final String COUNT_GROUP_BY_ID = "select count(id) from iam_group where id = ?";
 	
-	public static final String ID_NOT_NULL = "用户标识不能为空";
+	public static final String ID_NOT_NULL = "User id cannot be null.";
 	
 	public static final String DEFAULT_RAW_PASSWORD = "123456";
     
@@ -131,7 +131,7 @@ public class DefaultUserManager implements UserManager, RowMapper<User> {
 	
 	@Override
 	public Page<User> find(int page, int size, Integer groupId, String keyword) {
-		Pageable pageable = new PageRequest(page, size);
+		Pageable pageable = PageRequest.of(page, size);
 		List<Object> args = new ArrayList<Object>();
 		StringBuilder sqlFormat = new StringBuilder();
 		if (groupId != null) {
@@ -172,7 +172,7 @@ public class DefaultUserManager implements UserManager, RowMapper<User> {
 	@Override
 //	@Transactional
 	public User save(User user) {
-		Assert.notNull(user, "用户数据不能为空");
+		Assert.notNull(user, "User cannot be null");
 		if (user.getId() == null) {
 			if (exists(user.getUsername())) {
 	        	throw new DuplicateKeyException(String.format("用户名'%s'已被使用", user.getUsername()));
@@ -193,7 +193,6 @@ public class DefaultUserManager implements UserManager, RowMapper<User> {
 	        user.setPassword(null);
 	        return user;
 		}
-		//执行更新
 		jdbcOperations.update(UPDATE, user.getName(), user.getEmail(), user.getPhone(), user.getRoles(), user.getId());
         return user;
 	}
@@ -201,11 +200,11 @@ public class DefaultUserManager implements UserManager, RowMapper<User> {
 	@Override
 //	@Transactional
 	public List<User> batchInsert(List<User> users, Integer groupId) {
-		Assert.notEmpty(users, "用户数据列表不能为空");
+		Assert.notEmpty(users, "User list cannot be empty.");
 		// check group exists
 		if (groupId != null) {
 		    if (jdbcOperations.queryForObject(COUNT_GROUP_BY_ID, Long.class, groupId) == 0) {
-		        throw new DataIntegrityViolationException("用户组不存在，id=" + groupId);
+		        throw new DataIntegrityViolationException("Group does not exist, id=" + groupId);
 		    }
 		}
 		// save new user only
@@ -252,14 +251,14 @@ public class DefaultUserManager implements UserManager, RowMapper<User> {
 	@Override
 	public void changePassword(Integer userId, String oldPassword, String newPassword) throws IllegalArgumentException {
 	    Assert.notNull(userId, ID_NOT_NULL);
-	    Assert.isTrue(StringUtils.hasText(oldPassword) && StringUtils.hasText(newPassword), "密码不能为空");
+	    Assert.isTrue(StringUtils.hasText(oldPassword) && StringUtils.hasText(newPassword), "Password cannot be empty");
 	    
 		User currentUser = findOne(userId);
 		if (currentUser == null) {
-			throw new IllegalArgumentException("不存在用户：id=" + userId);
+			throw new IllegalArgumentException("User does not exist, id=" + userId);
 		}
 		if (!currentUser.getPassword().equals(passwordEncoder.encode(oldPassword))) {
-            throw new IllegalArgumentException("旧密码错误.");
+            throw new IllegalArgumentException("Old password is wrong.");
         }
 		jdbcOperations.update(CHANGE_PASSWORD, passwordEncoder.encode(newPassword), currentUser.getId());
 	}

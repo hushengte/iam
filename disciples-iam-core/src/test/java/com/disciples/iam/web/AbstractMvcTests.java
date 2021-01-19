@@ -40,7 +40,7 @@ public abstract class AbstractMvcTests {
     }
 	
 	protected MockHttpServletRequestBuilder jsonPost(String url, String payload) throws IOException {
-		return post(url).contentType(MediaType.APPLICATION_JSON_UTF8).content(payload);
+		return post(url).contentType(MediaType.APPLICATION_JSON).content(payload);
 	}
 	
 }

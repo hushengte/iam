@@ -4,7 +4,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * It is not recommend to use MD5 for password digest, 
+ * It is not recommended to use MD5 for password digest, 
  * we use it for back compatibility.
  * 
  * @author Ted Smith

@@ -19,7 +19,7 @@ public class UserManageApiTest extends AbstractMvcTests {
 	    userManger.save(new User("ddd", null, "dname", null, null));
 		mockMvc.perform(jsonPost("/admin/user/list.do?page=0&size=10", "field=1&keyword=ddd"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 			.andDo(MockMvcResultHandlers.print());
 	}
 	

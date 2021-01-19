@@ -7,120 +7,121 @@ import org.springframework.data.domain.Page;
 import com.disciples.iam.domain.User;
 
 /**
- * 用户管理服务
+ * User management Service
  */
 public interface UserManager {
 
     /**
-     * 用户分页
-     * @param page 页码，从0开始
-     * @param size 页记录数
-     * @param groupId 用户组ID
-     * @param keyword 用户名或用户姓名关键字
-     * @return 用户分页数据
+     * Find a page of user
+     * @param page Page number, start from 0
+     * @param size Page size
+     * @param groupId Group id
+     * @param username Search keyword of username
+     * @return A page of user
      */
-	Page<User> find(int page, int size, Integer groupId, String keyword);
+	Page<User> find(int page, int size, Integer groupId, String username);
 	
 	/**
-	 * 查找指定用户组的用户
-	 * @param groupId 用户组ID
-	 * @return 用户列表
+	 * Find users by group id
+	 * @param groupId Group id
+	 * @return List of users of the group
 	 */
 	List<User> find(Integer groupId);
 	
 	/**
-	 * 根据用户名查找用户
-	 * @param username 用户名
-	 * @return 用户
+	 * Find user by username
+	 * @param username Username
+	 * @return A user
 	 */
 	User findOneByUsername(String username);
 	
 	/**
-	 * 根据ID查找用户
-	 * @param id 用户ID
-	 * @return 用户
+	 * Find user by id
+	 * @param id User id
+	 * @return A user
 	 */
 	User findOne(Integer id);
 	
 	/**
-	 * 判断指定用户名的用户是否存在
-	 * @param username 用户名
-	 * @return 存在返回 true, 否则返回 false
+	 * Test whether a user exists.
+	 * @param username Username
+	 * @return Return <code>true</code> if exists, otherwise return <code>false</code>
 	 */
 	boolean exists(String username);
 	
 	/**
-	 * 如果用户标识为空，执行保存，否则执行更新
-	 * @param user 用户数据
-	 * @return 保存或更新后的用户
+	 * Save or update user. If user id is specified, it will execute update,
+	 * otherwise execute save operation.
+	 * @param user User data
+	 * @return A saved user
 	 */
 	User save(User user);
 	
 	/**
-	 * 批量添加用户，如果用户组标识不为空，该用户组为添加用户所在组
-	 * @param users 用户数据
-	 * @param groupId 用户组标识，可以为null
-	 * @return 添加的用户列表
+	 * Batch insert user. If group id is specified, all users will be add to the group.
+	 * @param users List of users
+	 * @param groupId Group id, can be null
+	 * @return List of added user
 	 */
 	List<User> batchInsert(List<User> users, Integer groupId);
 	
 	/**
-	 * 删除指定用户
-	 * @param userId 用户ID
+	 * Delete user by id
+	 * @param userId User id
 	 */
 	void delete(Integer userId);
 	
 	/**
-	 * 删除用户列表
-	 * @param userIds 用户ID列表
+	 * Delete user by ids
+	 * @param userIds List of user id
 	 */
 	void delete(List<Integer> userIds);
 	
 	/**
-	 * 查找指定用户的用户组ID
-	 * @param userId 用户ID
-	 * @return 用户组ID列表
+	 * Find list of group id of the user
+	 * @param userId User id
+	 * @return List of group id of the user
 	 */
 	List<Integer> groupIds(Integer userId);
 	
 	/**
-	 * 获取指定用户的用户组权限列表
-	 * @param userId 用户ID
-	 * @return 用户组权限列表
+	 * Find group roles of a user
+	 * @param userId User id
+	 * @return List of group roles of the user
 	 */
 	List<String> getGroupRoles(Integer userId);
 	
 	/**
-	 * 更新指定用户的用户组
-	 * @param userId 用户ID
-	 * @param groupIds 用户组ID列表
-	 * @return 影响的记录数
+	 * Update group id list of a user
+	 * @param userId User id
+	 * @param groupIds New group id list
+	 * @return Updated count
 	 */
 	int updateGroups(Integer userId, List<Integer> groupIds);
 	
 	/**
-	 * 修改用户密码
-	 * @param userId 用户ID
-	 * @param oldPassword 原密码
-	 * @param newPassword 新密码
+	 * Change user's password
+	 * @param userId User id
+	 * @param oldPassword Old password
+	 * @param newPassword New password
 	 */
 	void changePassword(Integer userId, String oldPassword, String newPassword);
 	
 	/**
-	 * 重置用户密码
-	 * @param userId 用户ID
+	 * Reset user's password
+	 * @param userId User id
 	 */
 	void resetPassword(Integer userId);
 	
 	/**
-	 * 用户启用
-	 * @param userId 用户ID
+	 * Enable a user
+	 * @param userId User id
 	 */
 	void enable(Integer userId);
 	
 	/**
-	 * 用户禁用
-	 * @param userId 用户ID
+	 * Disable a user
+	 * @param userId User id
 	 */
 	void disable(Integer userId);
 	

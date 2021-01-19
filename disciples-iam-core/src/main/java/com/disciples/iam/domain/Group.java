@@ -6,10 +6,13 @@ import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
-@SuppressWarnings("serial")
+import org.springframework.security.core.SpringSecurityCoreVersion;
+
 @Entity
 @Table(name = "iam_group", indexes = @Index(columnList = "name"))
 public class Group extends BaseEntity {
+    
+    private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
     
     private String name;
     private String roles;

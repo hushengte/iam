@@ -30,7 +30,7 @@ public class DefaultUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userManager.findOneByUsername(username);
         if (user == null) {
-            throw new UsernameNotFoundException("用户不存在,username=" + username);
+            throw new UsernameNotFoundException("User does not exist, username=" + username);
         }
         List<String> groupRoles = userManager.getGroupRoles(user.getId());
         Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();

@@ -38,7 +38,7 @@ import com.disciples.iam.domain.User;
 
 public class DefaultGroupManagerTests {
     
-    static final String USER_IDS_NOT_EMPTY = "用户标识列表不能为空";
+    static final String USER_IDS_NOT_EMPTY = "User id list cannot be empty.";
     
     private EmbeddedDatabase dataSource;
     private DefaultUserManager userManager;
@@ -123,7 +123,7 @@ public class DefaultGroupManagerTests {
         String countSql = (String) ReflectionTestUtils.getField(DefaultGroupManager.class, "COUNT_USERS");
         given(jdbcOperations.queryForObject(eq(countSql), eq(Long.class), eq(groupId))).willReturn(2L);
         assertThatExceptionOfType(DataIntegrityViolationException.class).isThrownBy(() -> gm.delete(groupId))
-            .withMessage("用户组存在用户，请删除用户后再操作");
+            .withMessage("There are users in this group, please delete these users first.");
         verify(jdbcOperations).queryForObject(eq(countSql), eq(Long.class), eq(groupId));
         verifyNoMoreInteractions(jdbcOperations);
     }
@@ -198,7 +198,7 @@ public class DefaultGroupManagerTests {
     @Test
     public void save_NullGroup_ShouldThrowException() {
         assertThatIllegalArgumentException().isThrownBy(() -> manager.save(null))
-            .withMessage("用户组数据不能为空");
+            .withMessage("Group cannot be null.");
     }
     
     @Test

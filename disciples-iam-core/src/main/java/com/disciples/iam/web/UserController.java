@@ -16,13 +16,11 @@ public class UserController {
     @Autowired
     private UserManager userManager;
     
-    //用户详情
     @RequestMapping(value = "detail", method = RequestMethod.GET)
     public Object detail() {
         return SecurityUtils.getPrincipal();
     }
     
-    //修改密码
     @RequestMapping(value = "changePassword", method = RequestMethod.POST)
     public Object changePassword(@RequestParam String oldPassword, @RequestParam String newPassword) {
     	userManager.changePassword(SecurityUtils.getPrincipal().getId(), oldPassword, newPassword);
