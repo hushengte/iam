@@ -19,7 +19,7 @@ public abstract class BaseEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE, generator = TABLE_GENERATOR_NAME)
-    @TableGenerator(name = TABLE_GENERATOR_NAME, allocationSize = 1)
+    @TableGenerator(name = TABLE_GENERATOR_NAME, allocationSize = 50)
     public Integer getId() {
         return id;
     }
