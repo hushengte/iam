@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class FreeMarkerConfig {
 
     @Bean

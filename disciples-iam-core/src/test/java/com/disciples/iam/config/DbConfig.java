@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class DbConfig {
 	
 	@Bean

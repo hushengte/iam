@@ -7,7 +7,7 @@ import com.disciples.iam.web.GroupManageController;
 import com.disciples.iam.web.UserController;
 import com.disciples.iam.web.UserManageController;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class WebConfig {
 	
 	@Bean

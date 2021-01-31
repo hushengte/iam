@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 /**
  * OAuth2 security configuration
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class OAuth2AuthorizationSecurityConfiguration extends WebSecurityConfigurerAdapter implements Ordered {
     
     public static final int SECURITY_ORDER = 10;

@@ -2,7 +2,6 @@ package com.disciples.iam.config;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -15,30 +14,27 @@ import com.disciples.iam.service.impl.DefaultGroupManager;
 import com.disciples.iam.service.impl.DefaultUserDetailsService;
 import com.disciples.iam.service.impl.DefaultUserManager;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class ServiceConfiguration {
     
-	@Autowired
-	private DataSource dataSource;
-	
 	@Bean
-    public JdbcOperations jdbcTemplate() {
+    public JdbcOperations jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 	
 	@Bean
-	public UserManager userManager() {
-		return new DefaultUserManager(jdbcTemplate());
+	public UserManager userManager(JdbcOperations jdbcTemplate) {
+		return new DefaultUserManager(jdbcTemplate);
 	}
 	
 	@Bean
-	public UserDetailsService userDetailsService() {
-		return new DefaultUserDetailsService(userManager());
+	public UserDetailsService userDetailsService(UserManager userManager) {
+		return new DefaultUserDetailsService(userManager);
 	}
 	
 	@Bean
-	public GroupManager groupManager() {
-		return new DefaultGroupManager(jdbcTemplate());
+	public GroupManager groupManager(JdbcOperations jdbcTemplate) {
+		return new DefaultGroupManager(jdbcTemplate);
 	}
 	
 }
