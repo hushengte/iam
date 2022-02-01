@@ -17,7 +17,7 @@ public class UserManageApiTest extends AbstractMvcTests {
 	@Test
 	public void testList() throws Exception {
 	    userManger.save(new User("ddd", null, "dname", null, null));
-		mockMvc.perform(jsonPost("/admin/user/list.do?page=0&size=10", "field=1&keyword=ddd"))
+		mockMvc.perform(formPost("/admin/user/list?page=0&size=10", "field=1&keyword=ddd"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 			.andDo(MockMvcResultHandlers.print());

@@ -9,7 +9,7 @@
     </parent>
     
 	<artifactId>disciples-iam-parent</artifactId>
-	<version>2.0.1</version>
+	<version>2.0.2</version>
 	<packaging>pom</packaging>
 
 	<name>disciples-iam-parent</name>
@@ -28,9 +28,9 @@
 	</modules>
     
     <properties>
-        <spring.version>5.2.12.RELEASE</spring.version>
-        <spring-security.version>5.3.6.RELEASE</spring-security.version>
-        <servlet-api.version>4.0.1</servlet-api.version>
+        <spring.version>5.3.15</spring.version>
+        <spring-security.version>5.6.1</spring-security.version>
+        <servlet-api.version>4.0.4</servlet-api.version>
     </properties>
     
     <repositories>
@@ -80,8 +80,8 @@
             </dependency>
             
             <dependency>
-	            <groupId>javax.servlet</groupId>
-	            <artifactId>javax.servlet-api</artifactId>
+	            <groupId>jakarta.servlet</groupId>
+	            <artifactId>jakarta.servlet-api</artifactId>
 	            <version>${servlet-api.version}</version>
 	        </dependency>
             
