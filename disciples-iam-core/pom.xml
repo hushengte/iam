@@ -19,7 +19,7 @@
         <commons-codec.version>1.15</commons-codec.version>
         
         <persistence-api.version>2.2</persistence-api.version>
-  		<jackson.version>2.13.1</jackson.version>
+  		<jackson.version>2.13.4</jackson.version>
         
         <freemarker.version>2.3.31</freemarker.version>
         <logback.version>1.2.10</logback.version>
