@@ -28,6 +28,9 @@ import com.disciples.iam.identity.domain.UserNotExistsException;
 import com.disciples.iam.identity.domain.Users;
 import com.disciples.iam.util.Md5PasswordEncoder;
 
+/**
+ * User management Service
+ */
 @Service
 public class UserManager {
 	

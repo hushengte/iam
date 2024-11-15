@@ -11,6 +11,9 @@ import com.disciples.iam.identity.domain.Group;
 import com.disciples.iam.identity.domain.GroupNotExistsException;
 import com.disciples.iam.identity.domain.Groups;
 
+/**
+ * Group management Service
+ */
 @Service
 public class GroupManager {
 
