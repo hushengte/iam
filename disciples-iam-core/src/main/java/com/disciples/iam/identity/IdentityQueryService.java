@@ -28,7 +28,7 @@ import com.disciples.iam.identity.domain.User;
 public class IdentityQueryService {
 	
 	private static final String COUNT_GROUP = "select count(id) from iam_group";
-	private static final String FIND_GROUP = "select id, name, roles, create_time from iam_group";
+	private static final String FIND_GROUP = "select * from iam_group";
 	private static final String FIND_GROUP_ID_NAMES = "select `id` as `key`, `name` as `value` from iam_group";
 	
 	private static final String FIND_USER_BY_GROUP_ID = "select %s from iam_user u left join iam_user_group m on u.id = m.user_id where m.group_id = ?";
