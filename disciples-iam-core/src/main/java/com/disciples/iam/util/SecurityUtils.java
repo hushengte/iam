@@ -2,8 +2,7 @@ package com.disciples.iam.util;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import com.disciples.iam.domain.User;
+import org.springframework.security.core.userdetails.User;
 
 public abstract class SecurityUtils {
 	

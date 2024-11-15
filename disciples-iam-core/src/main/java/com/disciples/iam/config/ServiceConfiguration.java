@@ -8,11 +8,12 @@ import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import com.disciples.iam.service.GroupManager;
-import com.disciples.iam.service.UserManager;
-import com.disciples.iam.service.impl.DefaultGroupManager;
-import com.disciples.iam.service.impl.DefaultUserDetailsService;
-import com.disciples.iam.service.impl.DefaultUserManager;
+import com.disciples.iam.identity.GroupManager;
+import com.disciples.iam.identity.IamUserDetailsService;
+import com.disciples.iam.identity.UserManager;
+import com.disciples.iam.identity.domain.Groups;
+import com.disciples.iam.identity.domain.Users;
+import com.disciples.iam.util.Md5PasswordEncoder;
 
 @Configuration(proxyBeanMethods = false)
 public class ServiceConfiguration {
@@ -23,18 +24,18 @@ public class ServiceConfiguration {
     }
 	
 	@Bean
-	public UserManager userManager(JdbcOperations jdbcTemplate) {
-		return new DefaultUserManager(jdbcTemplate);
+	public UserManager userManager(JdbcOperations jdbcTemplate, Users users) {
+		return new UserManager(jdbcTemplate, users, new Md5PasswordEncoder());
 	}
 	
 	@Bean
-	public UserDetailsService userDetailsService(UserManager userManager) {
-		return new DefaultUserDetailsService(userManager);
+	public GroupManager groupManager(Groups groups) {
+		return new GroupManager(groups);
 	}
 	
 	@Bean
-	public GroupManager groupManager(JdbcOperations jdbcTemplate) {
-		return new DefaultGroupManager(jdbcTemplate);
+	public UserDetailsService userDetailsService(Users users, Groups groups) {
+		return new IamUserDetailsService(users, groups);
 	}
 	
 }

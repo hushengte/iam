@@ -6,8 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.disciples.iam.domain.User;
-import com.disciples.iam.service.UserManager;
+import com.disciples.iam.identity.UserManager;
+import com.disciples.iam.identity.cmd.RegisterUser;
 
 public class UserManageApiTest extends AbstractMvcTests {
     
@@ -16,7 +16,7 @@ public class UserManageApiTest extends AbstractMvcTests {
 	
 	@Test
 	public void testList() throws Exception {
-	    userManger.save(new User("ddd", null, "dname", null, null));
+	    userManger.register(new RegisterUser("ddd", null, "dname", null, null));
 		mockMvc.perform(formPost("/admin/user/list?page=0&size=10", "field=1&keyword=ddd"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))

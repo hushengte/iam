@@ -23,10 +23,10 @@ import com.disciples.iam.config.DbConfig;
 import com.disciples.iam.config.FreeMarkerConfig;
 import com.disciples.iam.config.IamSecurityConfig;
 import com.disciples.iam.config.MvcConfig;
-import com.disciples.iam.config.ServiceConfig;
+import com.disciples.iam.config.ServiceConfiguration;
 
 @WebAppConfiguration
-@ContextConfiguration(classes = {DbConfig.class, ServiceConfig.class, 
+@ContextConfiguration(classes = {DbConfig.class, ServiceConfiguration.class, 
         MvcConfig.class, FreeMarkerConfig.class, IamSecurityConfig.class})
 @RunWith(SpringRunner.class)
 public class IamWebSecurityTests {
