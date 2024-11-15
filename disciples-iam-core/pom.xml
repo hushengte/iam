@@ -5,7 +5,8 @@
     <parent>
         <groupId>com.github.hushengte</groupId>
         <artifactId>disciples-iam-parent</artifactId>
-        <version>2.0.2</version>
+        <version>2.1.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     
 	<artifactId>disciples-iam-core</artifactId>
@@ -15,35 +16,22 @@
 	<description>IAM core</description>
 	
 	<properties>
-  		<spring-data-commons.version>2.6.1</spring-data-commons.version>
-        <commons-codec.version>1.15</commons-codec.version>
-        
-        <persistence-api.version>2.2</persistence-api.version>
-  		<jackson.version>2.13.1</jackson.version>
+  		<disciples-data-commons.version>1.0.0</disciples-data-commons.version>
+  		<jackson.version>2.13.5</jackson.version>
         
         <freemarker.version>2.3.31</freemarker.version>
-        <logback.version>1.2.10</logback.version>
-        <h2.version>2.1.210</h2.version>
+        <logback.version>1.2.12</logback.version>
+        <hikaricp.version>4.0.3</hikaricp.version>
+        <mysql.version>8.0.33</mysql.version>
+        <h2.version>2.3.232</h2.version>
   	</properties>
 	
 	<dependencies>
 		<dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
+            <groupId>com.github.hushengte</groupId>
+            <artifactId>disciples-data-commons</artifactId>
+            <version>${disciples-data-commons.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-aop</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-expression</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-        
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
@@ -52,34 +40,10 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
         </dependency>
-        
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-commons</artifactId>
-            <version>${spring-data-commons.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>${commons-codec.version}</version>
-        </dependency>
 		
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>javax.persistence-api</artifactId>
-            <version>${persistence-api.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -97,7 +61,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
-            <version>${spring.version}</version>
             <optional>true</optional>
         </dependency>
 		<dependency>
@@ -123,6 +86,18 @@
             <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>${hikaricp.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<version>${mysql.version}</version>			
+			<scope>test</scope>
+		</dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

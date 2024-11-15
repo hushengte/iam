@@ -9,7 +9,7 @@
     </parent>
     
 	<artifactId>disciples-iam-parent</artifactId>
-	<version>2.0.2</version>
+	<version>2.1.0</version>
 	<packaging>pom</packaging>
 
 	<name>disciples-iam-parent</name>
@@ -28,9 +28,9 @@
 	</modules>
     
     <properties>
-        <spring.version>5.3.15</spring.version>
-        <spring-security.version>5.6.1</spring-security.version>
-        <servlet-api.version>4.0.4</servlet-api.version>
+        <spring.version>5.3.31</spring.version>
+        <spring-security.version>5.7.11</spring-security.version>
+        <jakarta-servlet.version>4.0.4</jakarta-servlet.version>
     </properties>
     
     <repositories>
@@ -48,20 +48,10 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-aop</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-expression</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-web</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-context-support</artifactId>
+	            <version>${spring.version}</version>
+	        </dependency>
             <dependency>
 	            <groupId>org.springframework</groupId>
 	            <artifactId>spring-webmvc</artifactId>
@@ -82,7 +72,7 @@
             <dependency>
 	            <groupId>jakarta.servlet</groupId>
 	            <artifactId>jakarta.servlet-api</artifactId>
-	            <version>${servlet-api.version}</version>
+	            <version>${jakarta-servlet.version}</version>
 	        </dependency>
             
             <dependency>
@@ -90,12 +80,6 @@
                 <artifactId>spring-test</artifactId>
                 <version>${spring.version}</version>
                 <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

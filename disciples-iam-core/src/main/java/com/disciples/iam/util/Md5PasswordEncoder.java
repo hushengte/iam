@@ -1,13 +1,14 @@
 package com.disciples.iam.util;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.DigestUtils;
 
 /**
  * It is not recommended to use MD5 for password digest, 
  * we use it for back compatibility.
  * 
- * @author Ted Smith
  * @see org.springframework.security.crypto.password.PasswordEncoder
  */
 public class Md5PasswordEncoder implements PasswordEncoder {
@@ -19,7 +20,8 @@ public class Md5PasswordEncoder implements PasswordEncoder {
     
     @Override
     public String encode(CharSequence rawPassword) {
-        return DigestUtils.md5Hex((String)rawPassword);
+    	byte[] bytes = ((String)rawPassword).getBytes(StandardCharsets.UTF_8);
+        return DigestUtils.md5DigestAsHex(bytes);
     }
     
 }
