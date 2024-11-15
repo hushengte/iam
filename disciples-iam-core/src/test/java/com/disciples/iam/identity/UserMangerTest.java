@@ -13,6 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.disciples.iam.config.ManagerConfig;
 import com.disciples.iam.identity.cmd.ChangeUserPassword;
 import com.disciples.iam.identity.cmd.RegisterUser;
 import com.disciples.iam.identity.cmd.SaveUser;

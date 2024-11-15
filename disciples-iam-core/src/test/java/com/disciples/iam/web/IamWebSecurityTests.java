@@ -19,16 +19,15 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.disciples.iam.config.DbConfig;
 import com.disciples.iam.config.FreeMarkerConfig;
 import com.disciples.iam.config.IamSecurityConfig;
+import com.disciples.iam.config.ManagerConfig;
 import com.disciples.iam.config.MvcConfig;
-import com.disciples.iam.config.ServiceConfiguration;
 
-@WebAppConfiguration
-@ContextConfiguration(classes = {DbConfig.class, ServiceConfiguration.class, 
-        MvcConfig.class, FreeMarkerConfig.class, IamSecurityConfig.class})
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {ManagerConfig.class, 
+        MvcConfig.class, FreeMarkerConfig.class, IamSecurityConfig.class})
+@WebAppConfiguration
 public class IamWebSecurityTests {
 
     @Autowired

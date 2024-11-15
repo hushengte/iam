@@ -23,7 +23,6 @@
         <logback.version>1.2.12</logback.version>
         <hikaricp.version>4.0.3</hikaricp.version>
         <mysql.version>8.0.33</mysql.version>
-        <h2.version>2.3.232</h2.version>
   	</properties>
 	
 	<dependencies>
@@ -98,12 +97,6 @@
 			<version>${mysql.version}</version>			
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
-            <scope>test</scope>
-        </dependency>
 	</dependencies>
 
 </project>
