@@ -8,6 +8,10 @@ public class SaveGroup {
 	
 	public SaveGroup() {}
 
+	public SaveGroup(String name) {
+		this(null, name, null);
+	}
+	
 	public SaveGroup(Long id, String name, String roles) {
 		this.id = id;
 		this.name = name;

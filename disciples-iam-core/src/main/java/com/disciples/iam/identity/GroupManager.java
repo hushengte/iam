@@ -16,11 +16,14 @@ import com.disciples.iam.identity.domain.Groups;
  */
 @Service
 public class GroupManager {
+	
+	static final String GROUP_HAS_MEMBERS_MSG = "There are users in this group, please delete these users first.";
 
 	private final Groups groups;
 	
 	@Autowired
 	public GroupManager(Groups groups) {
+		Assert.notNull(groups, () -> "Group repository is required.");
 		this.groups = groups;
 	}
 	
@@ -43,7 +46,7 @@ public class GroupManager {
 	public boolean delete(Long groupId) {
 		Assert.notNull(groupId, () -> "groupId is required.");
 		if (groups.countMembers(groupId) > 0) {
-			throw new DataIntegrityViolationException("There are users in this group, please delete these users first.");
+			throw new DataIntegrityViolationException(GROUP_HAS_MEMBERS_MSG);
 		}
 		groups.deleteById(groupId);
 		return true;

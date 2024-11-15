@@ -2,8 +2,11 @@ package com.disciples.iam.identity.domain;
 
 import java.util.Objects;
 
+import org.springframework.data.relational.core.mapping.Table;
+
 import com.disciples.data.domain.AuditableEntity;
 
+@Table("iam_user_group")
 public class GroupMember extends AuditableEntity<Long> {
 
 	private Long groupId;
