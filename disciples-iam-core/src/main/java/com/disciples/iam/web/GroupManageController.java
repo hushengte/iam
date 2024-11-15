@@ -1,55 +1,45 @@
 package com.disciples.iam.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.disciples.iam.domain.Group;
-import com.disciples.iam.service.GroupManager;
-import com.disciples.iam.service.UserManager;
+import com.disciples.iam.identity.GroupManager;
+import com.disciples.iam.identity.IdentityQueryService;
+import com.disciples.iam.identity.cmd.SaveGroup;
 
 @RestController
 @RequestMapping("/admin/group")
 public class GroupManageController {
 	
 	@Autowired
-	private GroupManager groupManager;
+	private IdentityQueryService identityQueryService;
+	
 	@Autowired
-	private UserManager userManager;
+	private GroupManager groupManager;
 	
-	@RequestMapping(value = "keyValues", method = RequestMethod.GET)
+	@GetMapping("/keyValues")
     public Object keyValues() {
-        return groupManager.keyValues();
+        return identityQueryService.findGroupKeyValues();
     }
 	
-	@RequestMapping(value = "list", method = RequestMethod.POST)
-    public Object list(@RequestParam int page, @RequestParam int size, String keyword) {
-		return groupManager.find(page, size, keyword);
+	@PostMapping("/list")
+    public Object list(@RequestParam Integer page, @RequestParam Integer size, String keyword) {
+		return identityQueryService.findPagedGroups(page, size, keyword);
     }
 	
-    @RequestMapping(value = "add", method = RequestMethod.POST)
-    public Object save(@RequestBody Group dto) {
+    @PostMapping("/save")
+    public Object save(@RequestBody SaveGroup dto) {
         return groupManager.save(dto);
     }
     
-    @RequestMapping(value = "{id}", method = RequestMethod.PUT)
-    public Object update(@RequestBody Group dto) {
-        return groupManager.save(dto);
-    }
-    
-    @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public Object delete(@RequestParam Integer groupId) {
-    	groupManager.delete(groupId);
-        return Boolean.TRUE;
-    }
-    
-    @RequestMapping(value = "{id}/users", method = RequestMethod.POST)
-    public Object users(@PathVariable Integer groupId) {
-        return userManager.find(groupId);
+    @PostMapping("/delete")
+    public Object delete(@RequestParam Long groupId) {
+    	return groupManager.delete(groupId);
     }
     
 }

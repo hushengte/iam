@@ -1,8 +1,8 @@
 package com.disciples.iam.web;
 
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.disciples.iam.util.SecurityUtils;
@@ -14,7 +14,7 @@ import com.disciples.iam.util.SecurityUtils;
 @RequestMapping("/api")
 public class ApiController {
     
-    @RequestMapping(value = "user/info", method = RequestMethod.GET)
+    @GetMapping("/user/info")
     public Object info() {
     	return SecurityUtils.getPrincipal(UserDetails.class);
     }

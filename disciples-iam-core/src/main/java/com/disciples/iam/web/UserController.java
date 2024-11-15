@@ -1,12 +1,14 @@
 package com.disciples.iam.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.disciples.iam.service.UserManager;
+import com.disciples.iam.identity.UserManager;
+import com.disciples.iam.identity.cmd.ChangeUserPassword;
 import com.disciples.iam.util.SecurityUtils;
 
 @RestController
@@ -16,15 +18,16 @@ public class UserController {
     @Autowired
     private UserManager userManager;
     
-    @RequestMapping(value = "detail", method = RequestMethod.GET)
+    @GetMapping("/detail")
     public Object detail() {
         return SecurityUtils.getPrincipal();
     }
     
-    @RequestMapping(value = "changePassword", method = RequestMethod.POST)
+    @PostMapping("/password/change")
     public Object changePassword(@RequestParam String oldPassword, @RequestParam String newPassword) {
-    	userManager.changePassword(SecurityUtils.getPrincipal().getId(), oldPassword, newPassword);
-        return Boolean.TRUE;
+    	ChangeUserPassword cmd = new ChangeUserPassword(SecurityUtils.getAuthedUsername(), 
+    			oldPassword, newPassword);
+    	return userManager.changePassword(cmd);
     }
     
 }
