@@ -70,7 +70,8 @@ public class IamUserDetailsServiceTest {
         UserDetails ud = service.loadUserByUsername(username);
         assertNotNull(ud);
         Collection<? extends GrantedAuthority> authorities = ud.getAuthorities();
-        assertEquals(groles.size(), authorities.size());
+        // a default role is added
+        assertEquals(groles.size() + 1, authorities.size());
         List<String> roles = new ArrayList<>();
         roles.addAll(groles);
         for (String role : roles) {
