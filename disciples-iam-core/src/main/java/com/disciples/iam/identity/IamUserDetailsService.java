@@ -17,6 +17,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.disciples.iam.config.IamSecurityConfiguration;
 import com.disciples.iam.identity.domain.Group;
 import com.disciples.iam.identity.domain.Groups;
 import com.disciples.iam.identity.domain.User;
@@ -45,6 +46,7 @@ public class IamUserDetailsService implements UserDetailsService {
         for (String groupRole : groupRoles) {
             authorities.addAll(getAuthorities(groupRole));
         }
+        authorities.add(new SimpleGrantedAuthority(IamSecurityConfiguration.ROLE_USER));
         return new org.springframework.security.core.userdetails.User(username, user.getPassword(), 
         		user.isEnabled(), true, true, true, authorities);
     }
