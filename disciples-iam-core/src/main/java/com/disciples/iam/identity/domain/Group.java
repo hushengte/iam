@@ -25,7 +25,11 @@ public class Group extends AggregateRoot<Group> {
 	
 	@Transient
 	private Set<GroupMember> members = new HashSet<>();
-
+	
+	public Group() {
+		super(null);
+	}
+	
 	public Group(Long id) {
 		super(id);
 	}

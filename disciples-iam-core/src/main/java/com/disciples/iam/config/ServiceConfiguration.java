@@ -4,9 +4,7 @@ import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.core.convert.JdbcConverter;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
-import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -41,9 +39,8 @@ public class ServiceConfiguration extends MybatisSupportConfiguration {
 	}
 	
 	@Bean
-	public IdentityQueryService identityQueryService(JdbcOperations jdbcOperations, Groups groups,
-			RelationalMappingContext mappingContext, JdbcConverter jdbcConverter) {
-		return new IdentityQueryService(jdbcOperations, groups, mappingContext, jdbcConverter);
+	public IdentityQueryService identityQueryService(Users users, Groups groups) {
+		return new IdentityQueryService(users, groups);
 	}
 	
 	@Bean

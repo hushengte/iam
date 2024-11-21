@@ -26,7 +26,7 @@ public class UserManageController {
 	private UserManager userManager;
 	
 	@PostMapping("/list")
-    public Object list(@RequestParam Integer page, @RequestParam Integer size, Integer field, String keyword) {
+    public Object list(@RequestParam Integer page, @RequestParam Integer size, Long field, String keyword) {
 		return identityQueryService.findPagedUsers(page, size, field, keyword);
     }
 	

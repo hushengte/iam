@@ -17,6 +17,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.disciples.data.identifier.LongId;
 import com.disciples.iam.identity.cmd.ChangeUserPassword;
 import com.disciples.iam.identity.cmd.RegisterUser;
 import com.disciples.iam.identity.cmd.SaveUser;
@@ -189,10 +190,11 @@ public class UserManager {
 	}
 	
 	private int batchInsertMembership(Long userId, List<Long> groupIds) {
-		StringBuilder batch = new StringBuilder("insert into iam_user_group (user_id, group_id) values ");
+		StringBuilder batch = new StringBuilder("insert into iam_user_group (id, user_id, group_id) values ");
     	List<Object> args = new ArrayList<Object>();
     	for (Long groupId : groupIds) {
-    		batch.append("(?,?),");
+    		batch.append("(?,?,?),");
+    		args.add(LongId.generate());
     		args.add(userId);
     		args.add(groupId);
     	}

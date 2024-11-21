@@ -9,6 +9,11 @@ public class UpdateUserGroups {
     
     public UpdateUserGroups() {}
 
+	public UpdateUserGroups(Long userId, List<Long> groupIds) {
+		this.userId = userId;
+		this.groupIds = groupIds;
+	}
+
 	public Long getUserId() {
 		return userId;
 	}

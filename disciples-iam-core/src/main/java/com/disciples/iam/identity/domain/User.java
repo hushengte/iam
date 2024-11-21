@@ -30,6 +30,10 @@ public class User extends AggregateRoot<User> {
     	}
 	}
     
+    public User() {
+    	super(null);
+    }
+    
 	public User(Long id) {
 		super(id);
 	}
